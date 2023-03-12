@@ -20,3 +20,15 @@ pub enum ConfigError {
     #[error("l2 client url is invalid")]
     InvalidL2ClientUrl,
 }
+
+
+/// ChannelManager Error
+#[derive(Debug, Error)]
+pub enum ChannelManagerError {
+    /// L1 reorg
+    #[error("l1 reorg")]
+    L1Reorg,
+    /// L2 reorg
+    #[error("l2 reorg")]
+    L2Reorg,
+}

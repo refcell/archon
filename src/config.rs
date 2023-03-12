@@ -1,4 +1,4 @@
-use std::str::FromStr;
+use std::{str::FromStr, time::Duration};
 
 use eyre::Result;
 use clap::Parser;
@@ -27,6 +27,8 @@ pub struct Config {
     pub data_availability_layer: String,
     /// The network to batch transactions for.
     pub network: String,
+    /// The driver's polling interval.
+    pub polling_interval: Option<Duration>,
 }
 
 impl Default for Config {
@@ -40,6 +42,7 @@ impl Default for Config {
             l2_client_rpc_url: String::from(""),
             data_availability_layer: String::from("mainnet"),
             network: String::from("optimism-mainnet"),
+            polling_interval: Some(Duration::from_secs(5)),
         }
     }
 }
@@ -105,6 +108,9 @@ pub struct Cli {
     /// The network to batch transactions for.
     #[clap(short = 'n', long, default_value = "optimism-mainnet")]
     network: String,
+    /// The driver's polling interval.
+    #[clap(short = 'i', long, default_value = "5")]
+    polling_interval: u64,
 }
 
 impl Cli {
@@ -124,6 +130,7 @@ impl Cli {
             l2_client_rpc_url: l2_rpc_url,
             data_availability_layer: self.data_availability_layer,
             network: self.network,
+            polling_interval: Some(Duration::from_secs(self.polling_interval)),
         }
     }
 }

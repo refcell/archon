@@ -2,7 +2,7 @@
 use clap::Parser;
 use eyre::Result;
 
-use archon::{telemetry, config::Cli, client::Archon, batch::Batcher};
+use archon::{telemetry, config::Cli, client::Archon, driver::Batcher};
 
 #[tokio::main]
 async fn main() -> Result<()> {

@@ -12,7 +12,7 @@
 pub mod telemetry;
 
 /// The core batch submission logic
-pub mod batch;
+pub mod driver;
 
 /// The core Archon client
 pub mod client;
@@ -23,12 +23,15 @@ pub mod config;
 /// Common Archon Errors
 pub mod errors;
 
+/// Channel Manager
+pub mod channels;
+
 /// Common internal macros
 pub(crate) mod macros;
 
 /// Re-export Archon Types
 pub mod prelude {
-    pub use crate::batch::*;
+    pub use crate::driver::*;
     pub use crate::telemetry::*;
     pub use crate::errors::*;
     pub use crate::config::*;
