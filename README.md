@@ -13,7 +13,7 @@
 First install `archup`, archon's installer:
 
 ```
-curl https://raw.githubusercontent.com/refcell/arhcon/main/magup/install | bash
+curl https://raw.githubusercontent.com/refcell/arhcon/main/archup/install | bash
 ```
 
 To install archon, run `archup`.
