@@ -77,7 +77,7 @@ impl ChannelManager {
     /// Transaction data is returned as raw [Bytes].
     /// It currently only uses one frame per transaction. If the pending channel is
     /// full, it only returns the remaining frames of this channel until it got
-    /// successfully fully sent to L1. It returns io.EOF if there's no pending frame.
+    /// successfully fully sent to L1. It returns an error if there's no pending frame.
     pub fn tx_data(block_id: BlockId) -> Result<(Bytes, TransactionID)> {
         tracing::debug!(target: "archon::channels", "channel manager constructing tx data with block id: {:?}...", block_id);
         // TODO: implement
@@ -168,6 +168,15 @@ pub struct TransactionID {
     channel_id: String,
     /// The frame number
     frame_number: u64,
+}
+
+impl Default for TransactionID {
+    fn default() -> Self {
+        Self {
+            channel_id: String::from("0:0"),
+            frame_number: 0,
+        }
+    }
 }
 
 impl Display for TransactionID {

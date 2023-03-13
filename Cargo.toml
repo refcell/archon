@@ -12,8 +12,19 @@ keywords = ["Optimism", "op", "archon", "node", "ethereum"]
 name = "archon"
 path = "bin/archon.rs"
 
+[[bench]]
+name = "channels"
+harness = false
+
 [lib]
 crate-type = ["cdylib", "rlib"]
+
+[profile.release]
+strip = true
+opt-level = "z"
+lto = true
+codegen-units = 1
+panic = "abort"
 
 [dependencies]
 tokio = { version = "1.25.0", features = ["full"] }
@@ -58,3 +69,8 @@ ethers-providers = "1.0.2"
 ethers-middleware = "1.0.2"
 ethers-signers = "1.0.2"
 
+[target.'cfg(not(target_arch = "wasm32"))'.dev-dependencies]
+tracing-test = "0.2.4"
+criterion = { version = "0.4", features = [ "async_tokio", "plotters" ]}
+plotters = "0.3.4"
+tempfile = "3.4.0"

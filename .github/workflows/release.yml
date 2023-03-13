@@ -1,0 +1,167 @@
+name: release
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-mac-arm:
+    runs-on: macos-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v1
+
+      - name: install rust nightly
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: nightly
+          default: true
+          override: true
+
+      - name: install target
+        run: rustup target add aarch64-apple-darwin
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: build
+        run: cargo build --package cli --release --target aarch64-apple-darwin
+
+      - name: archive
+        run: gtar -czvf "helios_darwin_arm64.tar.gz" -C ./target/aarch64-apple-darwin/release helios
+
+      - name: generate tag name
+        id: tag
+        run: |
+          echo "::set-output name=release_tag::nightly-${GITHUB_SHA}"
+
+      - name: release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ steps.tag.outputs.release_tag }}
+          prerelease: true
+          files: |
+            helios_darwin_arm64.tar.gz
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  build-mac-amd:
+    runs-on: macos-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v1
+
+      - name: install rust nightly
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: nightly
+          default: true
+          override: true
+
+      - name: install target
+        run: rustup target add x86_64-apple-darwin
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: build
+        run: cargo build --package cli --release --target x86_64-apple-darwin	
+
+      - name: archive
+        run: gtar -czvf "helios_darwin_amd64.tar.gz" -C ./target/x86_64-apple-darwin/release helios
+
+      - name: generate tag name
+        id: tag
+        run: |
+          echo "::set-output name=release_tag::nightly-${GITHUB_SHA}"
+
+      - name: release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ steps.tag.outputs.release_tag }}
+          prerelease: true
+          files: |
+            helios_darwin_amd64.tar.gz
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  build-linux-arm:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v1
+
+      - name: install rust nightly
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: nightly
+          default: true
+          override: true
+
+      - name: install target
+        run: rustup target add aarch64-unknown-linux-gnu
+
+      - name: install dependencies
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y gcc-aarch64-linux-gnu
+          echo "CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=aarch64-linux-gnu-gcc" >> $GITHUB_ENV
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: build
+        run: cargo build --package cli --release --target aarch64-unknown-linux-gnu
+
+      - name: archive
+        run: tar -czvf "helios_linux_arm64.tar.gz" -C ./target/aarch64-unknown-linux-gnu/release helios
+
+      - name: generate tag name
+        id: tag
+        run: |
+          echo "::set-output name=release_tag::nightly-${GITHUB_SHA}"
+
+      - name: release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ steps.tag.outputs.release_tag }}
+          prerelease: true
+          files: |
+            helios_linux_arm64.tar.gz
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  build-linux-amd:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v1
+
+      - name: install rust nightly
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: nightly
+          default: true
+          override: true
+
+      - name: install target
+        run: rustup target add x86_64-unknown-linux-gnu
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: build
+        run: cargo build --package cli --release --target x86_64-unknown-linux-gnu
+
+      - name: archive
+        run: tar -czvf "helios_linux_amd64.tar.gz" -C ./target/x86_64-unknown-linux-gnu/release helios
+
+      - name: generate tag name
+        id: tag
+        run: |
+          echo "::set-output name=release_tag::nightly-${GITHUB_SHA}"
+
+      - name: release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ steps.tag.outputs.release_tag }}
+          prerelease: true
+          files: |
+            helios_linux_amd64.tar.gz
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
