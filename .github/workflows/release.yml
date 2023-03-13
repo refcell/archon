@@ -26,7 +26,7 @@ jobs:
         run: cargo build --package cli --release --target aarch64-apple-darwin
 
       - name: archive
-        run: gtar -czvf "helios_darwin_arm64.tar.gz" -C ./target/aarch64-apple-darwin/release helios
+        run: gtar -czvf "archon_darwin_arm64.tar.gz" -C ./target/aarch64-apple-darwin/release archon
 
       - name: generate tag name
         id: tag
@@ -39,7 +39,7 @@ jobs:
           tag_name: ${{ steps.tag.outputs.release_tag }}
           prerelease: true
           files: |
-            helios_darwin_arm64.tar.gz
+            archon_darwin_arm64.tar.gz
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -62,10 +62,10 @@ jobs:
       - uses: Swatinem/rust-cache@v2
 
       - name: build
-        run: cargo build --package cli --release --target x86_64-apple-darwin	
+        run: cargo build --package cli --release --target x86_64-apple-darwin
 
       - name: archive
-        run: gtar -czvf "helios_darwin_amd64.tar.gz" -C ./target/x86_64-apple-darwin/release helios
+        run: gtar -czvf "archon_darwin_amd64.tar.gz" -C ./target/x86_64-apple-darwin/release archon
 
       - name: generate tag name
         id: tag
@@ -78,7 +78,7 @@ jobs:
           tag_name: ${{ steps.tag.outputs.release_tag }}
           prerelease: true
           files: |
-            helios_darwin_amd64.tar.gz
+            archon_darwin_amd64.tar.gz
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -110,7 +110,7 @@ jobs:
         run: cargo build --package cli --release --target aarch64-unknown-linux-gnu
 
       - name: archive
-        run: tar -czvf "helios_linux_arm64.tar.gz" -C ./target/aarch64-unknown-linux-gnu/release helios
+        run: tar -czvf "archon_linux_arm64.tar.gz" -C ./target/aarch64-unknown-linux-gnu/release archon
 
       - name: generate tag name
         id: tag
@@ -123,7 +123,7 @@ jobs:
           tag_name: ${{ steps.tag.outputs.release_tag }}
           prerelease: true
           files: |
-            helios_linux_arm64.tar.gz
+            archon_linux_arm64.tar.gz
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -149,7 +149,7 @@ jobs:
         run: cargo build --package cli --release --target x86_64-unknown-linux-gnu
 
       - name: archive
-        run: tar -czvf "helios_linux_amd64.tar.gz" -C ./target/x86_64-unknown-linux-gnu/release helios
+        run: tar -czvf "archon_linux_amd64.tar.gz" -C ./target/x86_64-unknown-linux-gnu/release archon
 
       - name: generate tag name
         id: tag
@@ -162,6 +162,6 @@ jobs:
           tag_name: ${{ steps.tag.outputs.release_tag }}
           prerelease: true
           files: |
-            helios_linux_amd64.tar.gz
+            archon_linux_amd64.tar.gz
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
