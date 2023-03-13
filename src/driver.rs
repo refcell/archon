@@ -1,10 +1,10 @@
 use std::sync::{Arc, Mutex};
-use std::{time::Duration, sync::mpsc::Sender, pin::Pin};
+use std::{pin::Pin, sync::mpsc::Sender, time::Duration};
 
-use eyre::Result;
 use ethers_core::types::{BlockId, BlockNumber};
 use ethers_providers::Middleware;
-use ethers_providers::{Provider, Http};
+use ethers_providers::{Http, Provider};
+use eyre::Result;
 
 /// Driver handles the driving of the batch submission pipeline.
 #[derive(Debug, Default, Clone)]
@@ -19,7 +19,11 @@ pub struct Driver {
 
 impl Driver {
     /// Constructs a new Driver instance
-    pub fn new(provider: Provider<Http>, poll_interval: Option<Duration>, sender: Option<Sender<Pin<Box<BlockId>>>>) -> Self {
+    pub fn new(
+        provider: Provider<Http>,
+        poll_interval: Option<Duration>,
+        sender: Option<Sender<Pin<Box<BlockId>>>>,
+    ) -> Self {
         Self {
             provider: Some(provider),
             poll_interval: poll_interval.unwrap_or(Duration::from_secs(5)),
@@ -27,17 +31,21 @@ impl Driver {
         }
     }
 
-    /// Sets the driver sender
+    /// Sets the [Driver] [Sender] channel.
+    ///
+    /// Returns a mutable reference to the [Driver] instance.
     pub fn with_channel(&mut self, sender: Sender<Pin<Box<BlockId>>>) -> &mut Self {
         self.sender = Some(sender);
         self
     }
 
-    /// Spawns the driver into a new thread
+    /// Spawns the [Driver] into a new thread
     pub fn spawn(self) -> Result<tokio::task::JoinHandle<Result<()>>> {
-        let provider = self.provider.as_ref().ok_or(eyre::eyre!("Driver missing provider!"))?;
-        let sender = self.sender.as_ref().ok_or(eyre::eyre!("Driver missing sender!"))?;
-        let sender = Arc::new(Mutex::new(sender.clone()));
+        let provider = self
+            .provider
+            .ok_or(eyre::eyre!("Driver missing provider!"))?;
+        let sender = self.sender.ok_or(eyre::eyre!("Driver missing sender!"))?;
+        let sender = Arc::new(Mutex::new(sender));
         let interval = self.poll_interval;
         let driver_handle = tokio::spawn(async move {
             tracing::info!(target: "archon::driver", "Spawning driver in new thread...");
@@ -47,7 +55,11 @@ impl Driver {
     }
 
     /// Executes the driver
-    pub async fn execute(interval: Duration, sender: Arc<Mutex<Sender<Pin<Box<BlockId>>>>>, provider: Provider<Http>) -> Result<()> {
+    pub async fn execute(
+        interval: Duration,
+        sender: Arc<Mutex<Sender<Pin<Box<BlockId>>>>>,
+        provider: Provider<Http>,
+    ) -> Result<()> {
         tracing::info!(target: "archon::driver", "Executing driver...");
         loop {
             // Await the poll interval at the loop start so we can ergonomically continue below.
@@ -55,7 +67,10 @@ impl Driver {
 
             // Read the latest l1 block from the provider.
             tracing::debug!(target: "archon::driver", "Polling latest l1 block...");
-            let l1_tip = if let Ok(Some(t)) = provider.get_block(BlockId::Number(BlockNumber::Latest)).await {
+            let l1_tip = if let Ok(Some(t)) = provider
+                .get_block(BlockId::Number(BlockNumber::Latest))
+                .await
+            {
                 t
             } else {
                 continue;
@@ -75,19 +90,18 @@ impl Driver {
             // We lock here and not across the loop to prevent deadlocking other threads.
             let locked = if let Ok(s) = sender.lock() {
                 s
-            } else { continue; };
+            } else {
+                continue;
+            };
             if let Err(e) = locked.send(Box::pin(block_id)) {
                 tracing::warn!(target: "archon::driver", "failed to send block id {:?} to spawner: {}", block_id, e);
             }
         }
     }
 
-
-
     /// Load L2 Blocks into state
     pub async fn load_l2_blocks(&self) -> Result<()> {
         tracing::error!(target: "archon", "Inside load L2 blocks!");
-
 
         // loadBlocksIntoState loads all blocks since the previous stored block
         // It does the following:
@@ -95,8 +109,6 @@ impl Driver {
         // 2. Check if the sync status is valid or if we are all the way up to date
         // 3. Check if it needs to initialize state OR it is lagging (todo: lagging just means race condition?)
         // 4. Load all new blocks into the local state.
-
-
 
         // start, end, err := l.calculateL2BlockRangeToStore(ctx)
         // if err != nil {

@@ -20,8 +20,6 @@ tokio = { version = "1.25.0", features = ["full"] }
 async-trait = "0.1.64"
 futures = "0.3.26"
 eyre = "0.6.8"
-ethers-core = "1.0.2"
-ethers-providers = "1.0.2"
 hex = "0.4.3"
 libflate = "1.2.0"
 
@@ -51,4 +49,12 @@ ctrlc = "3.2.3"
 clap = { version = "3.2.18", features = ["derive", "env"] }
 dirs = "4.0.0"
 thiserror = "1.0.39"
+flate2 = { version = "1.0.25", features = ["zlib"] }
+once_cell = "1.17.1"
+
+# Ethers
+ethers-core = "1.0.2"
+ethers-providers = "1.0.2"
+ethers-middleware = "1.0.2"
+ethers-signers = "1.0.2"
 

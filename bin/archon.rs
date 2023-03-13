@@ -1,8 +1,7 @@
-
 use clap::Parser;
 use eyre::Result;
 
-use archon::{telemetry, config::Cli, client::Archon, driver::Batcher};
+use archon::{client::Archon, config::Cli, telemetry};
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -16,7 +15,5 @@ async fn main() -> Result<()> {
     // Run batch submission
     // This will block until complete, or erroring
     let mut archon = Archon::new(Some(config));
-    let batcher = Batcher::new();
-    archon.with_batcher(batcher);
     archon.start().await
 }

@@ -1,9 +1,9 @@
 use std::{str::FromStr, time::Duration};
 
-use eyre::Result;
 use clap::Parser;
-use ethers_core::types::{H256, Address};
-use ethers_providers::{Provider, Http};
+use ethers_core::types::{Address, H256};
+use ethers_providers::{Http, Provider};
+use eyre::Result;
 use serde::{Deserialize, Serialize};
 
 use crate::{errors::ConfigError, extract_env};
@@ -34,9 +34,13 @@ pub struct Config {
 impl Default for Config {
     fn default() -> Self {
         Self {
-            sequencer_private_key: String::from("0xa0bba68a40ddd0b573c344de2e7dd597af69b3d90e30a87ec91fa0547ddb6ab8"),
+            sequencer_private_key: String::from(
+                "0xa0bba68a40ddd0b573c344de2e7dd597af69b3d90e30a87ec91fa0547ddb6ab8",
+            ),
             sequencer_address: String::from("0xf4031e0983177452c9e7F27f46ff6bB9CA5933E1"),
-            proposer_private_key: String::from("0x4a6e5ceb37cd67ed8e740cc25b0ee6d11f6cfabe366daad1c908dec1d178bc72"),
+            proposer_private_key: String::from(
+                "0x4a6e5ceb37cd67ed8e740cc25b0ee6d11f6cfabe366daad1c908dec1d178bc72",
+            ),
             proposer_address: String::from("0x87A159604e2f18B01a080F672ee011F39777E640"),
             l1_client_rpc_url: String::from(""),
             l2_client_rpc_url: String::from(""),
@@ -70,12 +74,14 @@ impl Config {
 
     /// Constructs an L1 provider
     pub fn get_l1_client(&self) -> Result<Provider<Http>> {
-        Ok(Provider::<Http>::try_from(&self.l1_client_rpc_url).map_err(|_| ConfigError::InvalidL1ClientUrl)?)
+        Ok(Provider::<Http>::try_from(&self.l1_client_rpc_url)
+            .map_err(|_| ConfigError::InvalidL1ClientUrl)?)
     }
 
     /// Constructs an L2 provider
     pub fn get_l2_client(&self) -> Result<Provider<Http>> {
-        Ok(Provider::<Http>::try_from(&self.l2_client_rpc_url).map_err(|_| ConfigError::InvalidL2ClientUrl)?)
+        Ok(Provider::<Http>::try_from(&self.l2_client_rpc_url)
+            .map_err(|_| ConfigError::InvalidL2ClientUrl)?)
     }
 }
 
@@ -85,16 +91,32 @@ pub struct Cli {
     /// The private key to use for sequencing.
     /// If not provided, a fully public private key will be used as the default.
     /// The default private key is _only_ recommended for testing purposes.
-    #[clap(short = 'k', long, default_value = "0xa0bba68a40ddd0b573c344de2e7dd597af69b3d90e30a87ec91fa0547ddb6ab8")]
+    #[clap(
+        short = 'k',
+        long,
+        default_value = "0xa0bba68a40ddd0b573c344de2e7dd597af69b3d90e30a87ec91fa0547ddb6ab8"
+    )]
     sequencer_private_key: String,
     /// The sequencer public address.
-    #[clap(short = 's', long, default_value = "0xf4031e0983177452c9e7F27f46ff6bB9CA5933E1")]
+    #[clap(
+        short = 's',
+        long,
+        default_value = "0xf4031e0983177452c9e7F27f46ff6bB9CA5933E1"
+    )]
     sequencer_address: String,
     /// The private key to use for proposing.
-    #[clap(short = 'p', long, default_value = "0x4a6e5ceb37cd67ed8e740cc25b0ee6d11f6cfabe366daad1c908dec1d178bc72")]
+    #[clap(
+        short = 'p',
+        long,
+        default_value = "0x4a6e5ceb37cd67ed8e740cc25b0ee6d11f6cfabe366daad1c908dec1d178bc72"
+    )]
     proposer_private_key: String,
     /// The proposer public address.
-    #[clap(short = 'a', long, default_value = "0x87A159604e2f18B01a080F672ee011F39777E640")]
+    #[clap(
+        short = 'a',
+        long,
+        default_value = "0x87A159604e2f18B01a080F672ee011F39777E640"
+    )]
     proposer_address: String,
     /// The L1 client rpc url
     #[clap(short = 'l', long)]
@@ -134,4 +156,3 @@ impl Cli {
         }
     }
 }
-
