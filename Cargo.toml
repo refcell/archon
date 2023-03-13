@@ -3,14 +3,11 @@ name = "archon"
 version = "0.1.0-alpha"
 edition = "2021"
 authors = ["refcell"]
-description = "Optimism batch submitter"
+description = "Maximally efficient, robust batch submission service"
 repository = "https://github.com/refcell/archon"
 license = "MIT"
-keywords = ["Optimism", "op", "archon", "node", "ethereum"]
-exclude = [
-    "logo",
-    "archup"
-]
+keywords = ["op-stack", "op", "archon", "node", "ethereum"]
+exclude = [ "logo", "archup" ]
 
 [[bin]]
 name = "archon"
