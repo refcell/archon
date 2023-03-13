@@ -7,6 +7,10 @@ description = "Optimism batch submitter"
 repository = "https://github.com/refcell/archon"
 license = "MIT"
 keywords = ["Optimism", "op", "archon", "node", "ethereum"]
+exclude = [
+    "logo",
+    "archup"
+]
 
 [[bin]]
 name = "archon"

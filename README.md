@@ -1,8 +1,11 @@
-## archon
+## archon <img src="logo/archon_no_bg.png" width="80" height="18" />
 
 [![build](https://github.com/refcell/archon/actions/workflows/test.yml/badge.svg)](https://github.com/refcell/archon/actions/workflows/test.yml) [![license: MIT](https://img.shields.io/badge/license-MIT-brightgreen.svg)](https://opensource.org/licenses/MIT) [![chat](https://img.shields.io/badge/chat-telegram-blue)](https://t.me/+IntDY_gZJSRkNTJj)
 
-A maximally efficient, robust batch submission service for the [op-stack](https://stack.optimism.io/) written in pure rust.
+> _archon_ - a "ruler" in Greek; refering to each of the nine chief [magistrates](https://en.wikipedia.org/wiki/Magistrate) in ancient Athens.
+
+`archon` is a maximally efficient, robust batch submission service for the [op-stack](https://stack.optimism.io/) written in pure rust.
+
 
 
 ## Quickstart
@@ -30,6 +33,37 @@ OPTIONS:
     -d, --data-dir <DATA_DIR>                [default: /Users/user/.archon/data]
     -h, --help                               Print help information
     -n, --network <NETWORK>                  [default: optimism-goerli]
+```
+
+Default ports used by `archon`:
+- `6061` - pprof
+- `7301` - metrics
+
+### Environment Variables
+
+The following environment variables are the default values for `archon`'s configuration.
+These can be overridden by setting the environment variable in the shell before running `archon`, or setting the associated flags when running the `archon` cli.
+
+```env
+OP_BATCHER_L1_ETH_RPC=http://l1:8545
+OP_BATCHER_L2_ETH_RPC=http://l2:8545
+OP_BATCHER_ROLLUP_RPC=http://op-node:8545
+OP_BATCHER_MIN_L1_TX_SIZE_BYTES=1
+OP_BATCHER_MAX_L1_TX_SIZE_BYTES=120000
+OP_BATCHER_TARGET_L1_TX_SIZE_BYTES=624
+OP_BATCHER_TARGET_NUM_FRAMES=1
+OP_BATCHER_APPROX_COMPR_RATIO=1.0
+OP_BATCHER_CHANNEL_TIMEOUT=40
+OP_BATCHER_POLL_INTERVAL=1s
+OP_BATCHER_NUM_CONFIRMATIONS=1
+OP_BATCHER_SAFE_ABORT_NONCE_TOO_LOW_COUNT=3
+OP_BATCHER_RESUBMISSION_TIMEOUT=30s
+OP_BATCHER_MNEMONIC=test test test test test test test test test test test junk
+OP_BATCHER_SEQUENCER_HD_PATH="m/44'/60'/0'/0/2"
+OP_BATCHER_SEQUENCER_BATCH_INBOX_ADDRESS="${SEQUENCER_BATCH_INBOX_ADDRESS}"
+OP_BATCHER_LOG_TERMINAL="true"
+OP_BATCHER_PPROF_ENABLED="true"
+OP_BATCHER_METRICS_ENABLED="true"
 ```
 
 
@@ -122,23 +156,6 @@ You can see what each l1.rpckind value does here. This is worth experimenting wi
 
 
 
-
-
-
-
-By default, `magi` syncs in fast mode, querying other L2 nodes to construct the canonical L2 chain. This is the fastest, and most unsafe way to sync since it trusts L2 nodes to provide valid L2 blocks, that are batched to L1, but are not yet finalized. Safe, but non finalized blocks are blocks that are posted to L1, but have not yet past the fault proof window (7 days). This means that the block is not yet guaranteed to be part of the L2 canonical chain. The default mode does not require the sync flag to be specified, but it can be explicit, setting `--sync-mode` to `fast`.
-
-Leveraging go-ethereum, the rollup node offers a p2p network that propogates "unsafe" L2 blocks.
-
-Read more about the [Optimistic P2P rollup node](https://github.com/ethereum-optimism/optimism/blob/develop/specs/rollup-node-p2p.md).
-
-Another more secure way to sync is to query L2 nodes for all _finalized L2 blocks_, and then run the derivation for all safe blocks that are still within the fault proof window. This mode can be specified using the `--sync-mode` flag, setting it to `challenge`.
-
-Lastly, the fully trustless, most secure method of syncing is to _fully_ derive the L2 canonical chain from L1 blocks. This mode can be specified using the `--sync-mode` flag, setting it to `full`.
-
-## Specifications
-
-### Driver
 
 
 
