@@ -2,9 +2,9 @@ name: test
 
 on:
   push:
-    branches: [ "master" ]
+    branches: [ "main" ]
   pull_request:
-    branches: [ "master" ]
+    branches: [ "main" ]
 
 env:
   MAINNET_RPC_URL: ${{ secrets.MAINNET_RPC_URL }}

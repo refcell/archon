@@ -2,8 +2,6 @@ name: benchmarks
 
 on:
   workflow_bench:
-  # push:
-  #   branches: [ "master" ]
 
 env:
   MAINNET_RPC_URL: ${{ secrets.MAINNET_RPC_URL }}
