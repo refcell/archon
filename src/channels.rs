@@ -21,12 +21,10 @@ pub struct ChannelManager {
     blocks: Vec<Block<Transaction>>,
     /// Tip is the last block hash for reorg detection.
     tip: Option<H256>,
-
     /// A channel to send [Bytes] back to the [crate::client::Archon] orchestrator
     sender: Option<Sender<Pin<Box<Bytes>>>>,
     /// A channel to receive [BlockId] messages from the [crate::client::Archon] orchestrator
     receiver: Option<Receiver<Pin<Box<BlockId>>>>,
-
     /// An internal map of pending transactions.
     pending_txs: BTreeMap<TransactionID, Bytes>,
     /// An internal map of confirmed transactions.
@@ -116,7 +114,7 @@ impl ChannelManager {
             .ok_or(eyre::eyre!("ChannelManager missing sender!"))?;
         let sender = Arc::new(Mutex::new(sender));
         let channel_manager_handle = tokio::spawn(async move {
-            tracing::info!(target: "archon::channels", "Spawning channel manager in new thread...");
+            tracing::info!(target: "archon::channels", "Spawned ChannelManager in a new thread");
             ChannelManager::execute(receiver, sender).await
         });
         Ok(channel_manager_handle)

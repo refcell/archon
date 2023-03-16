@@ -15,5 +15,11 @@ async fn main() -> Result<()> {
     // Run batch submission
     // This will block until complete, or erroring
     let mut archon = Archon::new(Some(config));
-    archon.start().await
+    match archon.start().await {
+        Ok(_) => Ok(()),
+        Err(e) => {
+            tracing::error!(target: "archon", "Archon exited with error: {}", e);
+            Err(e)
+        }
+    }
 }

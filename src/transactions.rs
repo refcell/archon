@@ -26,6 +26,8 @@ pub struct TransactionManager {
     l1_batch_inbox_address: Option<Address>,
     /// The address to send transactions from
     sender_address: Option<Address>,
+    /// The private key to sign transactions with
+    sender_private_key: Option<String>,
     /// The [ethers_providers::Provider] to use to send transactions
     provider: Option<Provider<Http>>,
     /// A channel to send transaction [Receipt]s back to the [crate::client::Archon] orchestrator
@@ -36,8 +38,21 @@ pub struct TransactionManager {
 
 impl TransactionManager {
     /// Constructs a new [TransactionManager]
-    pub fn new() -> Self {
-        Self::default()
+    pub fn new(
+        l1_chain_id: Option<u64>,
+        l1_batch_inbox_address: Option<Address>,
+        sender_address: Option<Address>,
+        sender_private_key: Option<String>,
+        provider: Provider<Http>,
+    ) -> Self {
+        Self {
+            l1_chain_id,
+            l1_batch_inbox_address,
+            sender_address,
+            sender_private_key,
+            provider: Some(provider),
+            ..Self::default()
+        }
     }
 
     /// Sets the [TransactionManager] sender.
@@ -63,6 +78,7 @@ impl TransactionManager {
         l1_chain_id: u64,
         l1_batch_inbox_address: Address,
         sender_address: Address,
+        sender_private_key: String,
         provider: Provider<Http>,
         receiver: Receiver<Pin<Box<Bytes>>>,
         sender: Sender<Pin<Box<TransactionReceipt>>>,
@@ -130,12 +146,16 @@ impl TransactionManager {
         let sender_address = self
             .sender_address
             .ok_or(TransactionManagerError::MissingSenderAddress)?;
+        let private_key = self
+            .sender_private_key
+            .ok_or(TransactionManagerError::MissingSenderPrivateKey)?;
         let transaction_manager_handle = tokio::spawn(async move {
             tracing::info!(target: "archon::transactions", "Spawning transaction manager in new thread...");
             TransactionManager::execute(
                 l1_chain_id,
                 l1_batch_inbox_address,
                 sender_address,
+                private_key,
                 provider,
                 receiver,
                 sender,

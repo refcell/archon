@@ -79,4 +79,7 @@ pub enum TransactionManagerError {
     /// Missing transaction receipt
     #[error("missing transaction receipt")]
     TransactionReceiptNotFound,
+    /// Missing sender private key
+    #[error("missing sender private key")]
+    MissingSenderPrivateKey
 }

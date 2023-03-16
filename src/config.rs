@@ -1,7 +1,7 @@
 use std::{str::FromStr, time::Duration};
 
 use clap::Parser;
-use ethers_core::types::{Address, H256};
+use ethers_core::types::{Address, H256, Chain};
 use ethers_providers::{Http, Provider};
 use eyre::Result;
 use serde::{Deserialize, Serialize};
@@ -14,19 +14,25 @@ pub struct Config {
     /// The private key to use for sequencing.
     pub sequencer_private_key: String,
     /// The public address for sequencing.
-    pub sequencer_address: String,
+    pub sequencer_address: Address,
     /// The private key to use for proposing.
     pub proposer_private_key: String,
     /// The public address for proposing.
-    pub proposer_address: String,
+    pub proposer_address: Address,
+    /// The batcher private key
+    pub batcher_private_key: String,
+    /// The batcher address
+    pub batcher_address: Address,
     /// L1 client rpc url
     pub l1_client_rpc_url: String,
     /// L2 client rpc url
     pub l2_client_rpc_url: String,
     /// The data availability layer to use for batching transactions.
-    pub data_availability_layer: String,
+    pub data_availability_layer: u32,
     /// The network to batch transactions for.
-    pub network: String,
+    pub network: u32,
+    /// The batcher inbox
+    pub batcher_inbox: Address,
     /// The driver's polling interval.
     pub polling_interval: Option<Duration>,
 }
@@ -37,15 +43,20 @@ impl Default for Config {
             sequencer_private_key: String::from(
                 "0xa0bba68a40ddd0b573c344de2e7dd597af69b3d90e30a87ec91fa0547ddb6ab8",
             ),
-            sequencer_address: String::from("0xf4031e0983177452c9e7F27f46ff6bB9CA5933E1"),
+            sequencer_address: Address::from_str("0xf4031e0983177452c9e7F27f46ff6bB9CA5933E1").unwrap(),
             proposer_private_key: String::from(
                 "0x4a6e5ceb37cd67ed8e740cc25b0ee6d11f6cfabe366daad1c908dec1d178bc72",
             ),
-            proposer_address: String::from("0x87A159604e2f18B01a080F672ee011F39777E640"),
-            l1_client_rpc_url: String::from(""),
-            l2_client_rpc_url: String::from(""),
-            data_availability_layer: String::from("mainnet"),
-            network: String::from("optimism-mainnet"),
+            proposer_address: Address::from_str("0x87A159604e2f18B01a080F672ee011F39777E640").unwrap(),
+            batcher_address: Address::from_str("0x7431310e026B69BFC676C0013E12A1A11411EEc9").unwrap(),
+            batcher_private_key: String::from(
+                "0x4a6e5ceb37cd67ed8e740cc25b0ee6d11f6cfabe366daad1c908dec1d178bc72",
+            ),
+            l1_client_rpc_url: String::from("http://localhost:8545"),
+            l2_client_rpc_url: String::from("http://localhost:8547"),
+            data_availability_layer: Chain::from_str("mainnet").unwrap().into(),
+            network: Chain::from_str("optimism").unwrap().into(),
+            batcher_inbox: Address::from_str("0xff00000000000000000000000000000000042069").unwrap(),
             polling_interval: Some(Duration::from_secs(5)),
         }
     }
@@ -59,7 +70,7 @@ impl Config {
 
     /// Parses the CLI sequencer address string into an address
     pub fn get_sequencer_address(&self) -> Address {
-        Address::from_str(&self.sequencer_address).unwrap()
+        self.sequencer_address
     }
 
     /// Parses the CLI proposer private key string into a 32-byte hash
@@ -69,7 +80,7 @@ impl Config {
 
     /// Parses the CLI proposer address string into an address
     pub fn get_proposer_address(&self) -> Address {
-        Address::from_str(&self.proposer_address).unwrap()
+        self.proposer_address
     }
 
     /// Constructs an L1 provider
@@ -118,6 +129,27 @@ pub struct Cli {
         default_value = "0x87A159604e2f18B01a080F672ee011F39777E640"
     )]
     proposer_address: String,
+    /// The private key to use for batching.
+    #[clap(
+        short = 'x',
+        long,
+        default_value = "0x4a6e5ceb37cd67ed8e740cc25b0ee6d11f6cfabe366daad1c908dec1d178bc72"
+    )]
+    batcher_private_key: String,
+    /// The batcher public address.
+    #[clap(
+        short = 'q',
+        long,
+        default_value = "0x87A159604e2f18B01a080F672ee011F39777E640"
+    )]
+    batcher_address: String,
+    /// Batcher inbox address.
+    #[clap(
+        short = 'b',
+        long,
+        default_value = "0xff00000000000000000000000000000000042069"
+    )]
+    batcher_inbox: String,
     /// The L1 client rpc url
     #[clap(short = 'l', long)]
     l1_client_rpc_url: Option<String>,
@@ -128,7 +160,7 @@ pub struct Cli {
     #[clap(short = 'd', long, default_value = "mainnet")]
     data_availability_layer: String,
     /// The network to batch transactions for.
-    #[clap(short = 'n', long, default_value = "optimism-mainnet")]
+    #[clap(short = 'n', long, default_value = "optimism")]
     network: String,
     /// The driver's polling interval.
     #[clap(short = 'i', long, default_value = "5")]
@@ -145,14 +177,17 @@ impl Cli {
         // let config_path = home_dir().unwrap().join(".archon/archon.toml");
         Config {
             sequencer_private_key: self.sequencer_private_key,
-            sequencer_address: self.sequencer_address,
+            sequencer_address: Address::from_str(&self.sequencer_address).unwrap_or_default(),
             proposer_private_key: self.proposer_private_key,
-            proposer_address: self.proposer_address,
+            proposer_address: Address::from_str(&self.proposer_address).unwrap_or_default(),
+            batcher_private_key: self.batcher_private_key,
+            batcher_address: Address::from_str(&self.batcher_address).unwrap_or_default(),
             l1_client_rpc_url: l1_rpc_url,
             l2_client_rpc_url: l2_rpc_url,
-            data_availability_layer: self.data_availability_layer,
-            network: self.network,
+            data_availability_layer: Chain::from_str(&self.data_availability_layer).unwrap().into(),
+            network: Chain::from_str(&self.network).unwrap().into(),
             polling_interval: Some(Duration::from_secs(self.polling_interval)),
+            batcher_inbox: Address::from_str(&self.batcher_inbox).unwrap(),
         }
     }
 }

@@ -21,15 +21,55 @@ To install archon, run `archup`.
 The `archon` cli maintains a verbose menu for running a batching service. To see a list of all available commands, run `archon --help`. This will print output similar to the following:
 
 ```bash
-archon 0.1.0
+archon
+The Archon CLI
 
 USAGE:
     archon [OPTIONS]
 
 OPTIONS:
-    -d, --data-dir <DATA_DIR>                [default: /Users/user/.archon/data]
-    -h, --help                               Print help information
-    -n, --network <NETWORK>                  [default: optimism-goerli]
+    -a, --proposer-address <PROPOSER_ADDRESS>
+            The proposer public address [default: 0x87A159604e2f18B01a080F672ee011F39777E640]
+
+    -b, --batcher-inbox <BATCHER_INBOX>
+            Batcher inbox address [default: 0xff00000000000000000000000000000000042069]
+
+    -c, --l2-client-rpc-url <L2_CLIENT_RPC_URL>
+            The L2 client rpc url
+
+    -d, --data-availability-layer <DATA_AVAILABILITY_LAYER>
+            The data availability layer to use for batching transactions [default: mainnet]
+
+    -h, --help
+            Print help information
+
+    -i, --polling-interval <POLLING_INTERVAL>
+            The driver's polling interval [default: 5]
+
+    -k, --sequencer-private-key <SEQUENCER_PRIVATE_KEY>
+            The private key to use for sequencing. If not provided, a fully public private key will
+            be used as the default. The default private key is _only_ recommended for testing
+            purposes [default: 0xa0bba68a40ddd0b573c344de2e7dd597af69b3d90e30a87ec91fa0547ddb6ab8]
+
+    -l, --l1-client-rpc-url <L1_CLIENT_RPC_URL>
+            The L1 client rpc url
+
+    -n, --network <NETWORK>
+            The network to batch transactions for [default: optimism]
+
+    -p, --proposer-private-key <PROPOSER_PRIVATE_KEY>
+            The private key to use for proposing [default:
+            0x4a6e5ceb37cd67ed8e740cc25b0ee6d11f6cfabe366daad1c908dec1d178bc72]
+
+    -q, --batcher-address <BATCHER_ADDRESS>
+            The batcher public address [default: 0x87A159604e2f18B01a080F672ee011F39777E640]
+
+    -s, --sequencer-address <SEQUENCER_ADDRESS>
+            The sequencer public address [default: 0xf4031e0983177452c9e7F27f46ff6bB9CA5933E1]
+
+    -x, --batcher-private-key <BATCHER_PRIVATE_KEY>
+            The private key to use for batching [default:
+            0x4a6e5ceb37cd67ed8e740cc25b0ee6d11f6cfabe366daad1c908dec1d178bc72]
 ```
 
 Default ports used by `archon`:
@@ -43,8 +83,8 @@ The following environment variables are the default values for `archon`'s config
 They can be overridden by setting the environment variable in the shell before running `archon`, or setting the associated flags when running the `archon` cli.
 
 ```env
-OP_BATCHER_L1_ETH_RPC=http://l1:8545
-OP_BATCHER_L2_ETH_RPC=http://l2:8545
+OP_BATCHER_L1_ETH_RPC=http://localhost:8545
+OP_BATCHER_L2_ETH_RPC=http://localhost:8547
 OP_BATCHER_ROLLUP_RPC=http://op-node:8545
 OP_BATCHER_MAX_L1_TX_SIZE_BYTES=120000
 OP_BATCHER_TARGET_L1_TX_SIZE_BYTES=624

@@ -43,13 +43,14 @@ impl Driver {
     pub fn spawn(self) -> Result<tokio::task::JoinHandle<Result<()>>> {
         let provider = self
             .provider
+            .clone()
             .ok_or(eyre::eyre!("Driver missing provider!"))?;
         let sender = self.sender.ok_or(eyre::eyre!("Driver missing sender!"))?;
         let sender = Arc::new(Mutex::new(sender));
         let interval = self.poll_interval;
         let driver_handle = tokio::spawn(async move {
             tracing::info!(target: "archon::driver", "Spawning driver in new thread...");
-            Driver::execute(interval, sender, provider.clone()).await
+            Driver::execute(interval, sender, provider).await
         });
         Ok(driver_handle)
     }
@@ -61,20 +62,27 @@ impl Driver {
         provider: Provider<Http>,
     ) -> Result<()> {
         tracing::info!(target: "archon::driver", "Executing driver...");
+        let mut first_iter = true;
         loop {
             // Await the poll interval at the loop start so we can ergonomically continue below.
-            std::thread::sleep(interval);
+            if !first_iter {
+                std::thread::sleep(interval);
+            }
+            first_iter = false;
 
             // Read the latest l1 block from the provider.
-            tracing::debug!(target: "archon::driver", "Polling latest l1 block...");
-            let l1_tip = if let Ok(Some(t)) = provider
-                .get_block(BlockId::Number(BlockNumber::Latest))
-                .await
-            {
-                t
-            } else {
-                continue;
+            let l1_tip = match provider.get_block(BlockId::Number(BlockNumber::Latest)).await {
+                Ok(Some(t)) => t,
+                Ok(None) => {
+                    tracing::warn!(target: "archon::driver", "failed to fetch latest l1 block, got None!");
+                    continue;
+                }
+                Err(e) => {
+                    tracing::warn!(target: "archon::driver", "failed to fetch latest l1 block!\nError: {}", e);
+                    continue;
+                }
             };
+            tracing::info!(target: "archon::driver", "Fetched latest l1 block");
 
             // Derive a [BlockId] from the fetched [Block].
             let block_id = if let Some(h) = l1_tip.hash {
@@ -85,6 +93,7 @@ impl Driver {
                 tracing::warn!(target: "archon::driver", "block response missing both number and hash, failed to construct block id!");
                 continue;
             };
+            tracing::info!(target: "archon::driver", "Latest L1 block id: {:?}", block_id);
 
             // Pass back the latest L1 block id to the spawner.
             // We lock here and not across the loop to prevent deadlocking other threads.

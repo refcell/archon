@@ -119,15 +119,9 @@ impl Archon {
         self.channel_manager_sender = Some(archon_sender);
         self.channel_manager_receiver = Some(archon_receiver);
         let channel_manager = self.channel_manager.take();
-        let channel_manager = if let Some(mut cm) = channel_manager {
-            cm.with_sender(cm_sender);
-            cm.with_receiver(cm_receiver);
-            cm
-        } else {
-            // Construct the channel manager
-            // TODO:
-            ChannelManager::new()
-        };
+        let mut channel_manager = channel_manager.unwrap_or_default();
+        channel_manager.with_sender(cm_sender);
+        channel_manager.with_receiver(cm_receiver);
         channel_manager.spawn()
     }
 
@@ -143,23 +137,21 @@ impl Archon {
         self.tx_manager_sender = Some(archon_sender);
         self.tx_manager_receiver = Some(archon_receiver);
         let transaction_manager = self.tx_manager.take();
-        let transaction_manager = if let Some(mut tx_mgr) = transaction_manager {
-            tx_mgr.with_sender(tx_mgr_sender);
-            tx_mgr.with_receiver(tx_mgr_receiver);
-            tx_mgr
-        } else {
-            TransactionManager::new()
-        };
+        let mut transaction_manager = transaction_manager.unwrap_or(TransactionManager::new(
+            Some(self.config.network.into()),
+            Some(self.config.batcher_inbox),
+            Some(self.config.proposer_address),
+            Some(self.config.batcher_private_key.clone()),
+            self.config.get_l1_client()?,
+        ));
+        transaction_manager.with_sender(tx_mgr_sender);
+        transaction_manager.with_receiver(tx_mgr_receiver);
         transaction_manager.spawn()
     }
 
     /// Runs [Archon]'s batch submission pipeline.
     pub async fn start(&mut self) -> Result<()> {
-        // let sequencer_priv_key = self.config.get_sequencer_priv_key();
-        // let proposer_priv_key = self.config.get_proposer_priv_key();
-        // let l2_client = self.config.get_l2_client()?;
-
-        tracing::info!(target: "archon", "Starting batch submission pipeline");
+        tracing::info!(target: "archon", "Starting batch submission pipeline...");
 
         // Build and spawn a driver
         let driver_handle = self.spawn_driver()?;
