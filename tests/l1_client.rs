@@ -2,7 +2,7 @@ use ethers_providers::{Http, Provider, Middleware};
 use ethers_core::types::{BlockId, BlockNumber};
 
 /// Requires the following environment variables to be set:
-/// - ARCHON_L1_RPC_URL
+/// - L1_RPC_URL
 #[tokio::test]
 async fn test_l1_client() {
     let l1_rpc_url = std::env::var("L1_RPC_URL").unwrap();

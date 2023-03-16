@@ -1,11 +1,17 @@
-//! Archon
-//!
-//! A batch submission library for generalized rollups.
-
 #![warn(missing_docs)]
 #![warn(unused_extern_crates)]
 #![forbid(unsafe_code)]
 #![forbid(where_clauses_object_safety)]
+
+//! # Archon
+//!
+//! A generalized batch submission library for rollups.
+//!
+//! ### Usage
+//!
+//! Archon provides a number of different components to build your rollup batch submission logic.
+//!
+//! TODO: Add docs here.
 
 /// Archon Telemetry
 pub mod telemetry;
