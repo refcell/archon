@@ -1,15 +1,14 @@
 <!--  <img src="logo/archon_no_bg.png" width="80" height="18" /> -->
 
-# archon  ⚖
+<img width="100%" src="logo/background.png">
+
+<br />
+
+<!-- # archon  ⚖ -->
 
 [![build](https://github.com/refcell/archon/actions/workflows/test.yml/badge.svg)](https://github.com/refcell/archon/actions/workflows/test.yml) [![license: MIT](https://img.shields.io/badge/license-MIT-brightgreen.svg)](https://opensource.org/licenses/MIT) [![archon](https://img.shields.io/crates/v/archon.svg)](https://crates.io/crates/archon)
 
-> _archon_
->
-> A "ruler" in Greek; refering to each of the nine chief [magistrates](https://en.wikipedia.org/wiki/Magistrate) in ancient Athens.
-
 `archon` is a maximally efficient, robust batch submission service for the [op-stack](https://stack.optimism.io/) written in pure rust.
-
 
 ## Quickstart
 
@@ -20,7 +19,6 @@ curl https://raw.githubusercontent.com/refcell/arhcon/main/archup/install | bash
 ```
 
 To install archon, run `archup`.
-
 
 ## Configuration
 
@@ -201,6 +199,10 @@ We could even let a channel span multiple full transactions, to achieve an even 
 >
 > - If there's a small leftover frame, we can actually start a new channel and construct a transaction with both the leftover frame and the next channels first frame. This is a _greedy_ approach at filling up transactions in order to amortize the fixed gas costs of L1 transactions.
 > - If we build multiple channels in parallel, we can submit multiple frames in a single transaction.
+
+## Why "Archon"?
+
+The term "archon" means "ruler" in Greek. In ancient Athens, an "Archon" refers to each of the nine chief [magistrates](https://en.wikipedia.org/wiki/Magistrate), civilians who were elected to administer the law. Like the magistrates, Archon reigns judicial and executive power. Responsible for the state of the "rollup", Archon batches and submits chain data to a data availability layer.
 
 ## Contributing
 
