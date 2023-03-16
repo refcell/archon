@@ -1,5 +1,3 @@
-<!--  <img src="logo/archon_no_bg.png" width="80" height="18" /> -->
-
 <img width="100%" src="logo/background.png">
 
 <!-- # archon  ⚖ -->
