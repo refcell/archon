@@ -185,6 +185,21 @@ Both the `OP_BATCHER_CHANNEL_TIMEOUT` and `OP_BATCHER_SEQUENCER_BATCH_INBOX_ADDR
 
 The `OP_BATCHER_SEQUENCER_GENESIS_HASH` is deprecated. And the `OP_BATCHER_MIN_L1_TX_SIZE_BYTES` is now calculated differently as described in [Gas Effeciency](#-Gas-Efficiency) section above.
 
+## FAQ
+
+> Why doesn't the op-batcher currently send multiple frames per transaction?
+
+The optimal strategy with respect to gas efficiency is to send exactly one large frame per transaction. This minimizes overhead while maximizing the amount of data per transaction, amortizing the fixed 21k gas costs of L1 transactions.
+
+We could even let a channel span multiple full transactions, to achieve an even higher compression ratio (using parameter `TargetNumFrames`), because the more data per compression buffer, the better it can overall compress. But there is a tradeoff here where channels would be posted less frequently to the data availability layer. Realistically the gains are probably little here, so having one full frame per transaction is our best empirical guess for balancing gas efficient with UX (user experience).
+
+> **Note**
+>
+> The protocol still allows to have multiple frames per batcher tx to allow for future optimizations like
+>
+> - If there's a small leftover frame, we can actually start a new channel and construct a transaction with both the leftover frame and the next channels first frame. This is a _greedy_ approach at filling up transactions in order to amortize the fixed gas costs of L1 transactions.
+> - If we build multiple channels in parallel, we can submit multiple frames in a single transaction.
+
 ## Contributing
 
 All contributions are welcome. Before opening a PR, please submit an issue detailing the bug or feature. When opening a PR, please ensure that your contribution builds on the nightly rust toolchain, has been linted with `cargo fmt`, and contains tests when applicable.
