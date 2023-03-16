@@ -1,6 +1,6 @@
+use archon::client::*;
 use ethers_core::types::{BlockId, BlockNumber, U64};
 use eyre::Result;
-use archon::client::*;
 
 /// Blocks a new [tokio::runtime::Runtime] and runs the given future.
 ///
