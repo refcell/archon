@@ -2,8 +2,6 @@
 
 <img width="100%" src="logo/background.png">
 
-<br />
-
 <!-- # archon  ⚖ -->
 
 [![build](https://github.com/refcell/archon/actions/workflows/test.yml/badge.svg)](https://github.com/refcell/archon/actions/workflows/test.yml) [![license: MIT](https://img.shields.io/badge/license-MIT-brightgreen.svg)](https://opensource.org/licenses/MIT) [![archon](https://img.shields.io/crates/v/archon.svg)](https://crates.io/crates/archon)
