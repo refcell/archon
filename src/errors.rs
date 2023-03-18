@@ -81,5 +81,5 @@ pub enum TransactionManagerError {
     TransactionReceiptNotFound,
     /// Missing sender private key
     #[error("missing sender private key")]
-    MissingSenderPrivateKey
+    MissingSenderPrivateKey,
 }

@@ -71,7 +71,10 @@ impl Driver {
             first_iter = false;
 
             // Read the latest l1 block from the provider.
-            let l1_tip = match provider.get_block(BlockId::Number(BlockNumber::Latest)).await {
+            let l1_tip = match provider
+                .get_block(BlockId::Number(BlockNumber::Latest))
+                .await
+            {
                 Ok(Some(t)) => t,
                 Ok(None) => {
                     tracing::warn!(target: "archon::driver", "failed to fetch latest l1 block, got None!");

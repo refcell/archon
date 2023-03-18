@@ -1,0 +1,27 @@
+---
+version: "3.4"
+x-logging: &logging
+  logging:
+    driver: json-file
+    options:
+      max-size: 10m
+      max-file: "3"
+
+services:
+  op-batcher:
+    stop_grace_period: 3m
+    restart: unless-stopped
+    entrypoint: /scripts/start-archon.sh
+    env_file:
+      - ./arch-env.env
+      - .env
+    ports:
+      - "6061:6060"
+      - "7301:7300"
+      - "6545:8545"
+    volumes:
+      - ./:/scripts
+    <<: *logging
+
+volumes:
+  scripts:

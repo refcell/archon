@@ -5,7 +5,7 @@
 use ethers_core::types::{BlockId, H256};
 use ethers_providers::{Http, Provider};
 use eyre::Result;
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
 /// A Rollup Node
 #[derive(Debug, Clone, Default)]
@@ -75,7 +75,9 @@ impl RollupNode {
 }
 
 /// The current sync status of a rollup node.
-#[derive(Debug, Clone, Serialize, Deserialize, Default, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(
+    Debug, Clone, Serialize, Deserialize, Default, Copy, PartialEq, Eq, PartialOrd, Ord, Hash,
+)]
 pub struct SyncStatus {
     /// The current L1 block number.
     pub current_l1: u64,

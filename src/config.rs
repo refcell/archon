@@ -1,7 +1,7 @@
 use std::{str::FromStr, time::Duration};
 
 use clap::Parser;
-use ethers_core::types::{Address, H256, Chain};
+use ethers_core::types::{Address, Chain, H256};
 use ethers_providers::{Http, Provider};
 use eyre::Result;
 use serde::{Deserialize, Serialize};
@@ -43,12 +43,15 @@ impl Default for Config {
             sequencer_private_key: String::from(
                 "0xa0bba68a40ddd0b573c344de2e7dd597af69b3d90e30a87ec91fa0547ddb6ab8",
             ),
-            sequencer_address: Address::from_str("0xf4031e0983177452c9e7F27f46ff6bB9CA5933E1").unwrap(),
+            sequencer_address: Address::from_str("0xf4031e0983177452c9e7F27f46ff6bB9CA5933E1")
+                .unwrap(),
             proposer_private_key: String::from(
                 "0x4a6e5ceb37cd67ed8e740cc25b0ee6d11f6cfabe366daad1c908dec1d178bc72",
             ),
-            proposer_address: Address::from_str("0x87A159604e2f18B01a080F672ee011F39777E640").unwrap(),
-            batcher_address: Address::from_str("0x7431310e026B69BFC676C0013E12A1A11411EEc9").unwrap(),
+            proposer_address: Address::from_str("0x87A159604e2f18B01a080F672ee011F39777E640")
+                .unwrap(),
+            batcher_address: Address::from_str("0x7431310e026B69BFC676C0013E12A1A11411EEc9")
+                .unwrap(),
             batcher_private_key: String::from(
                 "0x4a6e5ceb37cd67ed8e740cc25b0ee6d11f6cfabe366daad1c908dec1d178bc72",
             ),
@@ -184,7 +187,9 @@ impl Cli {
             batcher_address: Address::from_str(&self.batcher_address).unwrap_or_default(),
             l1_client_rpc_url: l1_rpc_url,
             l2_client_rpc_url: l2_rpc_url,
-            data_availability_layer: Chain::from_str(&self.data_availability_layer).unwrap().into(),
+            data_availability_layer: Chain::from_str(&self.data_availability_layer)
+                .unwrap()
+                .into(),
             network: Chain::from_str(&self.network).unwrap().into(),
             polling_interval: Some(Duration::from_secs(self.polling_interval)),
             batcher_inbox: Address::from_str(&self.batcher_inbox).unwrap(),
