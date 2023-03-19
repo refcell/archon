@@ -26,8 +26,6 @@ impl Metrics {
         Ok(())
     }
 
-    // TODO: Properly handle incoming connections.
-    // TODO: Is there an out-of-the-box solution for serving metrics?
     /// Handle an incoming connection.
     pub fn handle_connection(&self, mut stream: TcpStream) -> Result<()> {
         let mut buffer = [0; 1024];

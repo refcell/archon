@@ -24,6 +24,9 @@ At it's core, `archon` is a client. In [./src/client.rs](./src/client.rs), there
 
 The `Archon` struct first _builds_ "stages" and then executes them as asynchronous threads. These stages split up the transformation of data types and handles channel transitions and metrics.
 
+The primary entrypoint for `archon` is [./src/client/rs](./src/client.rs) which is the `Archon` struct. `Archon` exposes methods for building batcher stages. These stages are intended to be constructed and executed in the following order:
+
+
 // TODO: Document further as part of a github issue.
 
 ## Configuration
