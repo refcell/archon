@@ -73,6 +73,16 @@ impl TransactionManager {
         self
     }
 
+    /// Sets the [TransactionManager] receiver channel.
+    ///
+    /// Only sets the receiver channel on the [TransactionManager]
+    /// if the provided receiver is `Some`.
+    pub fn receive(&mut self, bytes_recv: Option<Receiver<Pin<Box<Bytes>>>>) {
+        if let Some(recv) = bytes_recv {
+            self.receiver = Some(recv);
+        }
+    }
+
     /// Executes the [TransactionManager].
     pub async fn execute(
         l1_chain_id: u64,

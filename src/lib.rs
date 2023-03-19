@@ -40,6 +40,9 @@ pub mod builder;
 /// The transaction manager
 pub mod transactions;
 
+/// The metrics server
+pub mod metrics;
+
 /// Common internal macros
 pub(crate) mod macros;
 
@@ -54,6 +57,9 @@ pub mod prelude {
     /// The [crate::driver::Driver] is responsible for polling the L1 chain
     /// for the latest [Block] and feeding it's [BlockId] back to [Archon].
     pub use crate::driver::*;
+
+    /// A metrics server for [Archon].
+    pub use crate::metrics::*;
 
     /// Re-export rollup-related types.
     pub use crate::rollup::*;
