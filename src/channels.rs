@@ -1,15 +1,27 @@
 use std::{
     collections::BTreeMap,
-    fmt::{self, Display},
+    fmt::{
+        self,
+        Display,
+    },
     pin::Pin,
     sync::{
-        mpsc::{Receiver, Sender},
-        Arc, Mutex,
+        mpsc::{
+            Receiver,
+            Sender,
+        },
+        Arc,
+        Mutex,
     },
 };
 
 use bytes::Bytes;
-use ethers_core::types::{Block, BlockId, Transaction, H256};
+use ethers_core::types::{
+    Block,
+    BlockId,
+    Transaction,
+    H256,
+};
 use eyre::Result;
 
 use crate::errors::ChannelManagerError;
@@ -73,7 +85,10 @@ impl ChannelManager {
     }
 
     /// Sets the [ChannelManager] receiever
-    pub fn receive_blocks(&mut self, block_recv: Option<Receiver<Pin<Box<BlockId>>>>) -> &mut Self {
+    pub fn receive_blocks(
+        &mut self,
+        block_recv: Option<Receiver<Pin<Box<BlockId>>>>,
+    ) -> &mut Self {
         self.block_recv = block_recv;
         self
     }
@@ -112,7 +127,8 @@ impl ChannelManager {
                     .map_err(|_| ChannelManagerError::ChannelClosed)?
             };
             let (tx_data, tx_id) = Self::tx_data(*block_id)?;
-            let locked_sender = sender.lock().map_err(|_| ChannelManagerError::SenderLock)?;
+            let locked_sender =
+                sender.lock().map_err(|_| ChannelManagerError::SenderLock)?;
             locked_sender.send(Box::pin(tx_data.clone()))?;
             pending_txs.insert(tx_id, tx_data);
         }
@@ -164,7 +180,7 @@ impl ChannelManager {
     /// If no blocks were added yet, the parent hash check is skipped.
     pub fn push_l2_block(&mut self, block: Block<Transaction>) -> Result<()> {
         if self.tip.is_some() && self.tip != Some(block.parent_hash) {
-            return Err(ChannelManagerError::L1Reorg.into());
+            return Err(ChannelManagerError::L1Reorg.into())
         }
         self.tip = block.hash;
         self.blocks.push(block);

@@ -1,15 +1,25 @@
 use std::{
     pin::Pin,
-    sync::mpsc::{self, Receiver, Sender},
+    sync::mpsc::{
+        self,
+        Receiver,
+        Sender,
+    },
 };
 
 use bytes::Bytes;
-use ethers_core::types::{BlockId, TransactionReceipt};
+use ethers_core::types::{
+    BlockId,
+    TransactionReceipt,
+};
 use eyre::Result;
 use tokio::task::JoinHandle;
 
 use crate::{
-    channels::ChannelManager, config::Config, driver::Driver, metrics::Metrics,
+    channels::ChannelManager,
+    config::Config,
+    driver::Driver,
+    metrics::Metrics,
     transactions::TransactionManager,
 };
 
@@ -142,18 +152,20 @@ impl Archon {
     ///
     /// Returns a [JoinHandle] to the spawned [TransactionManager] if successfully spawed.
     pub fn spawn_transaction_manager(&mut self) -> Result<()> {
-        let (tx_mgr_sender, archon_receiver) = mpsc::channel::<Pin<Box<TransactionReceipt>>>();
+        let (tx_mgr_sender, archon_receiver) =
+            mpsc::channel::<Pin<Box<TransactionReceipt>>>();
         let (archon_sender, tx_mgr_receiver) = mpsc::channel::<Pin<Box<Bytes>>>();
         self.tx_manager_sender = Some(archon_sender);
         self.tx_manager_receiver = Some(archon_receiver);
         let transaction_manager = self.tx_manager.take();
-        let mut transaction_manager = transaction_manager.unwrap_or(TransactionManager::new(
-            Some(self.config.network.into()),
-            Some(self.config.batcher_inbox),
-            Some(self.config.proposer_address),
-            Some(self.config.batcher_private_key.clone()),
-            self.config.get_l1_client()?,
-        ));
+        let mut transaction_manager =
+            transaction_manager.unwrap_or(TransactionManager::new(
+                Some(self.config.network.into()),
+                Some(self.config.batcher_inbox),
+                Some(self.config.proposer_address),
+                Some(self.config.batcher_private_key.clone()),
+                self.config.get_l1_client()?,
+            ));
         transaction_manager.with_sender(tx_mgr_sender);
         transaction_manager.with_receiver(tx_mgr_receiver);
         self.tx_manager_handle = Some(
@@ -207,17 +219,19 @@ impl Archon {
         Receiver<Pin<Box<TransactionReceipt>>>,
     )> {
         let (archon_sender, tx_mgr_receiver) = mpsc::channel::<Pin<Box<Bytes>>>();
-        let (tx_mgr_sender, archon_receiver) = mpsc::channel::<Pin<Box<TransactionReceipt>>>();
+        let (tx_mgr_sender, archon_receiver) =
+            mpsc::channel::<Pin<Box<TransactionReceipt>>>();
         self.tx_manager_sender = Some(archon_sender.clone());
         // self.tx_manager_receiver = Some(archon_receiver.clone());
         let transaction_manager = self.tx_manager.take();
-        let mut transaction_manager = transaction_manager.unwrap_or(TransactionManager::new(
-            Some(self.config.network.into()),
-            Some(self.config.batcher_inbox),
-            Some(self.config.proposer_address),
-            Some(self.config.batcher_private_key.clone()),
-            self.config.get_l1_client()?,
-        ));
+        let mut transaction_manager =
+            transaction_manager.unwrap_or(TransactionManager::new(
+                Some(self.config.network.into()),
+                Some(self.config.batcher_inbox),
+                Some(self.config.proposer_address),
+                Some(self.config.batcher_private_key.clone()),
+                self.config.get_l1_client()?,
+            ));
         transaction_manager.with_sender(tx_mgr_sender);
         transaction_manager.with_receiver(tx_mgr_receiver);
         transaction_manager.receive_bytes(bytes_recv);
