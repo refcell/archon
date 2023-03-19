@@ -1,15 +1,25 @@
 use bytes::Bytes;
-use ethers_core::types::{Address, TransactionReceipt, TransactionRequest};
+use ethers_core::types::{
+    Address,
+    TransactionReceipt,
+    TransactionRequest,
+};
 use ethers_middleware::SignerMiddleware;
-use ethers_providers::Middleware;
-use ethers_providers::{Http, Provider};
+use ethers_providers::{
+    Http,
+    Middleware,
+    Provider,
+};
 use ethers_signers::LocalWallet;
 use eyre::Result;
 // use once_cell::sync::Lazy;
 use std::{
     convert::TryFrom,
     pin::Pin,
-    sync::mpsc::{Receiver, Sender},
+    sync::mpsc::{
+        Receiver,
+        Sender,
+    },
 };
 
 use crate::errors::TransactionManagerError;
@@ -60,13 +70,19 @@ impl TransactionManager {
     /// Sets the [TransactionManager] sender.
     ///
     /// This [std::sync::mpsc::channel] is used to send [Receipt]s back to the [crate::client::Archon] orchestrator.
-    pub fn with_sender(&mut self, sender: Sender<Pin<Box<TransactionReceipt>>>) -> &mut Self {
+    pub fn with_sender(
+        &mut self,
+        sender: Sender<Pin<Box<TransactionReceipt>>>,
+    ) -> &mut Self {
         self.sender = Some(sender);
         self
     }
 
     /// Sets the [TransactionManager] bytes receiver.
-    pub fn receive_bytes(&mut self, bytes_recv: Option<Receiver<Pin<Box<Bytes>>>>) -> &mut Self {
+    pub fn receive_bytes(
+        &mut self,
+        bytes_recv: Option<Receiver<Pin<Box<Bytes>>>>,
+    ) -> &mut Self {
         self.bytes_receiver = bytes_recv;
         self
     }
@@ -131,7 +147,7 @@ impl TransactionManager {
                 tr
             } else {
                 tracing::error!(target: "archon::transactions", "Failed to craft transaction");
-                continue;
+                continue
             };
 
             // Send the transaction to L1
@@ -223,7 +239,8 @@ impl TransactionManager {
         // Send the transaction
         let pending_tx = client.send_transaction(tx, None).await?;
         let receipt = pending_tx.confirmations(6).await?;
-        let receipt = receipt.ok_or(TransactionManagerError::TransactionReceiptNotFound)?;
+        let receipt =
+            receipt.ok_or(TransactionManagerError::TransactionReceiptNotFound)?;
 
         // Force drop the lock result to demonstrate we are done sending the transaction
         // std::mem::drop(lock_result);

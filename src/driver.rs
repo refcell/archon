@@ -1,9 +1,22 @@
-use std::sync::{Arc, Mutex};
-use std::{pin::Pin, sync::mpsc::Sender, time::Duration};
+use std::{
+    pin::Pin,
+    sync::{
+        mpsc::Sender,
+        Arc,
+        Mutex,
+    },
+    time::Duration,
+};
 
-use ethers_core::types::{BlockId, BlockNumber};
-use ethers_providers::Middleware;
-use ethers_providers::{Http, Provider};
+use ethers_core::types::{
+    BlockId,
+    BlockNumber,
+};
+use ethers_providers::{
+    Http,
+    Middleware,
+    Provider,
+};
 use eyre::Result;
 
 /// Driver handles the driving of the batch submission pipeline.
@@ -78,11 +91,11 @@ impl Driver {
                 Ok(Some(t)) => t,
                 Ok(None) => {
                     tracing::warn!(target: "archon::driver", "failed to fetch latest l1 block, got None!");
-                    continue;
+                    continue
                 }
                 Err(e) => {
                     tracing::warn!(target: "archon::driver", "failed to fetch latest l1 block!\nError: {}", e);
-                    continue;
+                    continue
                 }
             };
             tracing::info!(target: "archon::driver", "Fetched latest l1 block");
@@ -94,7 +107,7 @@ impl Driver {
                 BlockId::from(n)
             } else {
                 tracing::warn!(target: "archon::driver", "block response missing both number and hash, failed to construct block id!");
-                continue;
+                continue
             };
             tracing::info!(target: "archon::driver", "Latest L1 block id: {:?}", block_id);
 
@@ -103,7 +116,7 @@ impl Driver {
             let locked = if let Ok(s) = sender.lock() {
                 s
             } else {
-                continue;
+                continue
             };
             if let Err(e) = locked.send(Box::pin(block_id)) {
                 tracing::warn!(target: "archon::driver", "failed to send block id {:?} to spawner: {}", block_id, e);
