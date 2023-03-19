@@ -1,7 +1,5 @@
 <img width="100%" src="logo/background.png">
 
-<!-- # archon  ⚖ -->
-
 [![build](https://github.com/refcell/archon/actions/workflows/test.yml/badge.svg)](https://github.com/refcell/archon/actions/workflows/test.yml) [![license: MIT](https://img.shields.io/badge/license-MIT-brightgreen.svg)](https://opensource.org/licenses/MIT) [![archon](https://img.shields.io/crates/v/archon.svg)](https://crates.io/crates/archon)
 
 `archon` is a maximally efficient, robust batch submission service for the [op-stack](https://stack.optimism.io/) written in pure rust.
@@ -15,6 +13,14 @@ curl https://raw.githubusercontent.com/refcell/arhcon/main/archup/install | bash
 ```
 
 To install archon, run `archup`.
+
+## Architecture
+
+At it's core, `archon` is a client. In [./src/client.rs](./src/client.rs), there is an `Archon` struct that is the core client/driver of the batcher.
+
+The `Archon` struct first _builds_ "stages" and then executes them as asynchronous threads. These stages split up the transformation of data types and handles channel transitions and metrics.
+
+// TODO: Document further as part of a github issue.
 
 ## Configuration
 
