@@ -2,7 +2,7 @@
 set -e
 
 REPO="refcell/archon"
-NAME=archon
+NAME=arch
 
 INSTALLER_NAME=${NAME}up
 

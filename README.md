@@ -1,14 +1,12 @@
-> **Warning**
->
-> WORK IN PROGRESS
-> This is an early version of archon, a generalized + ambitious batch submission service for rollups written in rust.
-
-
 <img width="100%" src="logo/background.png">
 
 [![build](https://github.com/refcell/archon/actions/workflows/test.yml/badge.svg)](https://github.com/refcell/archon/actions/workflows/test.yml) [![license: MIT](https://img.shields.io/badge/license-MIT-brightgreen.svg)](https://opensource.org/licenses/MIT) [![archon](https://img.shields.io/crates/v/archon.svg)](https://crates.io/crates/archon)
 
-`archon` is a maximally efficient, robust batch submission service for the [op-stack](https://stack.optimism.io/) written in pure rust.
+`archon` is an efficient, robust, and generalized batch submission service for rollup stacks written in pure rust.
+
+> **Note**
+>
+> Archon is primarily tested against the [op-stack](https://stack.optimism.io/).
 
 ## Quickstart
 

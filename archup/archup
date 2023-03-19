@@ -2,7 +2,7 @@
 set -e
 
 REPO="refcell/archon"
-NAME=archon
+NAME=arch
 
 DIR=$HOME/.$NAME
 BIN_DIR=$DIR/bin
