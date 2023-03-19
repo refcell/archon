@@ -1,7 +1,11 @@
 use clap::Parser;
 use eyre::Result;
 
-use archon::{client::Archon, config::Cli, telemetry};
+use archon::{
+    client::Archon,
+    config::Cli,
+    telemetry,
+};
 
 #[tokio::main]
 async fn main() -> Result<()> {

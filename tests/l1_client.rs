@@ -1,5 +1,12 @@
-use ethers_core::types::{BlockId, BlockNumber};
-use ethers_providers::{Http, Middleware, Provider};
+use ethers_core::types::{
+    BlockId,
+    BlockNumber,
+};
+use ethers_providers::{
+    Http,
+    Middleware,
+    Provider,
+};
 
 /// Requires the following environment variables to be set:
 /// - L1_RPC_URL

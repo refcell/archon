@@ -18,17 +18,32 @@
 //! The shutdown module provides a [shutdown::register_shutdown] function which will
 //! register a ctrl-c handler to gracefully shutdown the running thread.
 
-use std::env::current_dir;
-use std::path::Path;
+use std::{
+    env::current_dir,
+    path::Path,
+};
 
 use eyre::Result;
-use tracing::subscriber::set_global_default;
-use tracing::{Level, Subscriber};
+use tracing::{
+    subscriber::set_global_default,
+    Level,
+    Subscriber,
+};
 use tracing_log::LogTracer;
-use tracing_subscriber::Layer;
-use tracing_subscriber::{layer::SubscriberExt, EnvFilter, Registry};
+use tracing_subscriber::{
+    layer::SubscriberExt,
+    EnvFilter,
+    Layer,
+    Registry,
+};
 
-use ansi_term::Colour::{Blue, Cyan, Purple, Red, Yellow};
+use ansi_term::Colour::{
+    Blue,
+    Cyan,
+    Purple,
+    Red,
+    Yellow,
+};
 
 /// Registers a ctrl-c handler to gracefully shutdown the driver
 pub fn register_shutdown() {

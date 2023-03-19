@@ -39,9 +39,11 @@ pub(crate) mod macros;
 
 /// Re-export Archon Types
 pub mod prelude {
-    pub use crate::config::*;
-    pub use crate::errors::*;
-    pub use crate::telemetry::*;
+    pub use crate::{
+        config::*,
+        errors::*,
+        telemetry::*,
+    };
 
     /// Re-export driver-related types.
     ///

@@ -1,7 +1,11 @@
 use eyre::Result;
-use std::io::prelude::*;
-use std::net::TcpListener;
-use std::net::TcpStream;
+use std::{
+    io::prelude::*,
+    net::{
+        TcpListener,
+        TcpStream,
+    },
+};
 
 /// Metrics
 ///
