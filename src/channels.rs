@@ -29,6 +29,8 @@ pub struct ChannelManager {
     pending_txs: BTreeMap<TransactionID, Bytes>,
     /// An internal map of confirmed transactions.
     confirmed_txs: BTreeMap<TransactionID, BlockId>,
+    /// A block receiver
+    block_recv: Option<Receiver<Pin<Box<BlockId>>>>,
 }
 
 /// PendingChannel is a constructed pending channel
@@ -67,6 +69,12 @@ impl ChannelManager {
     /// Optionally, the [ChannelManager] should validate that the [BlockId] is the valid latest L1 [BlockId].
     pub fn with_receiver(&mut self, receiver: Receiver<Pin<Box<BlockId>>>) -> &mut Self {
         self.receiver = Some(receiver);
+        self
+    }
+
+    /// Sets the [ChannelManager] receiever
+    pub fn receive_blocks(&mut self, block_recv: Option<Receiver<Pin<Box<BlockId>>>>) -> &mut Self {
+        self.block_recv = block_recv;
         self
     }
 

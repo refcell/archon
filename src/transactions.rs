@@ -34,6 +34,8 @@ pub struct TransactionManager {
     sender: Option<Sender<Pin<Box<TransactionReceipt>>>>,
     /// A channel to receive [Bytes] from the [crate::client::Archon] orchestrator
     receiver: Option<Receiver<Pin<Box<Bytes>>>>,
+    /// A bytes receiver
+    bytes_receiver: Option<Receiver<Pin<Box<Bytes>>>>,
 }
 
 impl TransactionManager {
@@ -60,6 +62,15 @@ impl TransactionManager {
     /// This [std::sync::mpsc::channel] is used to send [Receipt]s back to the [crate::client::Archon] orchestrator.
     pub fn with_sender(&mut self, sender: Sender<Pin<Box<TransactionReceipt>>>) -> &mut Self {
         self.sender = Some(sender);
+        self
+    }
+
+    /// Sets the [TransactionManager] bytes receiver.
+    pub fn receive_bytes(
+        &mut self,
+        bytes_recv: Option<Receiver<Pin<Box<Bytes>>>>,
+    ) -> &mut Self {
+        self.bytes_receiver = bytes_recv;
         self
     }
 
