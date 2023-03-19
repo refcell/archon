@@ -7,8 +7,9 @@ on:
     branches: [ "main" ]
 
 env:
-  MAINNET_RPC_URL: ${{ secrets.MAINNET_RPC_URL }}
-  GOERLI_RPC_URL: ${{ secrets.GOERLI_RPC_URL }}
+  L1_RPC_URL: ${{ secrets.L1_RPC_URL }}
+  L2_RPC_URL: ${{ secrets.L2_RPC_URL }}
+  ROLLUP_NODE_RPC_URL: ${{ secrets.ROLLUP_NODE_RPC_URL }}
 
 jobs:
   check:
