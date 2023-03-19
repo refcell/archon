@@ -92,18 +92,25 @@ impl ChannelManager {
 
     /// Executes the [ChannelManager].
     pub async fn execute(
+        block_recv: Option<Receiver<Pin<Box<BlockId>>>>,
         receiver: Arc<Mutex<Receiver<Pin<Box<BlockId>>>>>,
         sender: Arc<Mutex<Sender<Pin<Box<Bytes>>>>>,
     ) -> Result<()> {
-        // TODO: pull pending transactions up to the [ChannelManager] state
         let mut pending_txs = BTreeMap::new();
         loop {
-            let locked_receiver = receiver
-                .lock()
-                .map_err(|_| ChannelManagerError::ReceiverLock)?;
-            let block_id = locked_receiver
-                .recv()
-                .map_err(|_| ChannelManagerError::ChannelClosed)?;
+            // Read block id from the receiver
+            let block_id = if let Some(block_recv) = &block_recv {
+                block_recv
+                    .recv()
+                    .map_err(|_| ChannelManagerError::ChannelClosed)?
+            } else {
+                let locked_receiver = receiver
+                    .lock()
+                    .map_err(|_| ChannelManagerError::ReceiverLock)?;
+                locked_receiver
+                    .recv()
+                    .map_err(|_| ChannelManagerError::ChannelClosed)?
+            };
             let (tx_data, tx_id) = Self::tx_data(*block_id)?;
             let locked_sender = sender.lock().map_err(|_| ChannelManagerError::SenderLock)?;
             locked_sender.send(Box::pin(tx_data.clone()))?;
@@ -123,7 +130,7 @@ impl ChannelManager {
         let sender = Arc::new(Mutex::new(sender));
         let channel_manager_handle = tokio::spawn(async move {
             tracing::info!(target: "archon::channels", "Spawned ChannelManager in a new thread");
-            ChannelManager::execute(receiver, sender).await
+            ChannelManager::execute(self.block_recv, receiver, sender).await
         });
         Ok(channel_manager_handle)
     }

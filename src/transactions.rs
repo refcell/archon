@@ -66,10 +66,7 @@ impl TransactionManager {
     }
 
     /// Sets the [TransactionManager] bytes receiver.
-    pub fn receive_bytes(
-        &mut self,
-        bytes_recv: Option<Receiver<Pin<Box<Bytes>>>>,
-    ) -> &mut Self {
+    pub fn receive_bytes(&mut self, bytes_recv: Option<Receiver<Pin<Box<Bytes>>>>) -> &mut Self {
         self.bytes_receiver = bytes_recv;
         self
     }
@@ -94,12 +91,14 @@ impl TransactionManager {
         }
     }
 
+    #[allow(clippy::too_many_arguments)]
     /// Executes the [TransactionManager].
     pub async fn execute(
+        bytes_receiver: Option<Receiver<Pin<Box<Bytes>>>>,
         l1_chain_id: u64,
         l1_batch_inbox_address: Address,
         sender_address: Address,
-        sender_private_key: String,
+        _sender_private_key: String,
         provider: Provider<Http>,
         receiver: Receiver<Pin<Box<Bytes>>>,
         sender: Sender<Pin<Box<TransactionReceipt>>>,
@@ -108,10 +107,14 @@ impl TransactionManager {
         let wallet = LocalWallet::new(&mut rand::thread_rng());
         loop {
             // Receive the transaction bytes from the channel
-            // let locked_receiver = receiver.lock().map_err(|_| TransactionManagerError::ReceiverLock)?;
-            let tx_bytes = receiver
-                .recv()
-                .map_err(|_| TransactionManagerError::ChannelClosed)?;
+            let tx_bytes = match &bytes_receiver {
+                Some(bytes_receiver) => bytes_receiver
+                    .recv()
+                    .map_err(|_| TransactionManagerError::ChannelClosed)?,
+                None => receiver
+                    .recv()
+                    .map_err(|_| TransactionManagerError::ChannelClosed)?,
+            };
             let tx_bytes = tx_bytes.to_vec();
             let tx_bytes = Bytes::try_from(tx_bytes)?;
 
@@ -138,11 +141,6 @@ impl TransactionManager {
                 built_transaction,
             )
             .await?;
-
-            // let (tx_data, tx_id) = Self::tx_data(*block_id)?;
-            // let locked_sender = sender
-            //     .lock()
-            //     .map_err(|_| TransactionManagerError::SenderLock)?;
             sender.send(Box::pin(tx_receipt))?;
         }
     }
@@ -170,9 +168,11 @@ impl TransactionManager {
         let private_key = self
             .sender_private_key
             .ok_or(TransactionManagerError::MissingSenderPrivateKey)?;
+        let bytes_receiver = self.bytes_receiver;
         let transaction_manager_handle = tokio::spawn(async move {
             tracing::info!(target: "archon::transactions", "Spawning transaction manager in new thread...");
             TransactionManager::execute(
+                bytes_receiver,
                 l1_chain_id,
                 l1_batch_inbox_address,
                 sender_address,

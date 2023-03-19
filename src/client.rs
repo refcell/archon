@@ -9,8 +9,8 @@ use eyre::Result;
 use tokio::task::JoinHandle;
 
 use crate::{
-    channels::ChannelManager, config::Config, driver::Driver,
-    transactions::TransactionManager, metrics::Metrics,
+    channels::ChannelManager, config::Config, driver::Driver, metrics::Metrics,
+    transactions::TransactionManager,
 };
 
 /// Archon
@@ -24,7 +24,7 @@ use crate::{
 /// [ethers_core::types::BlockId] which it then sends back to [Archon].
 ///
 /// When [Archon] receives a [ethers_core::types::BlockId] from the [Driver], it passes it along to
-/// the [ChannelManager]
+/// the [ChannelManager].
 #[derive(Debug, Default)]
 pub struct Archon {
     /// The inner [Config], used to configure [Archon]'s parameters
@@ -95,7 +95,9 @@ impl Archon {
         let (sender, receiver) = mpsc::channel::<Pin<Box<BlockId>>>();
         self.driver_receiver = Some(receiver);
         let driver = self.driver.take();
-        let mut driver = if let Some( d) = driver { d } else {
+        let mut driver = if let Some(d) = driver {
+            d
+        } else {
             // Construct an L1 client
             let l1_client = self.config.get_l1_client()?;
             let poll_interval = self.config.polling_interval;
@@ -117,7 +119,7 @@ impl Archon {
     ///
     /// Returns a [JoinHandle] to the spawned [ChannelManager] if successfully spawed.
     pub fn spawn_channel_manager(&mut self) -> Result<()> {
-        let (cm_sender, archon_receiver) = mpsc::channel::<Pin<Box<Bytes>>>();
+        let (cm_sender, _) = mpsc::channel::<Pin<Box<Bytes>>>();
         let (archon_sender, cm_receiver) = mpsc::channel::<Pin<Box<BlockId>>>();
         self.channel_manager_sender = Some(archon_sender);
         // self.channel_manager_receiver = Some(archon_receiver);
@@ -179,6 +181,7 @@ impl Archon {
         Ok(receiver)
     }
 
+    #[allow(clippy::type_complexity)]
     /// Builds a new [ChannelManager] instance.
     pub fn build_channel_manager(
         &mut self,
@@ -194,6 +197,7 @@ impl Archon {
         Ok((archon_sender, archon_receiver))
     }
 
+    #[allow(clippy::type_complexity)]
     /// Builds a new [TransactionManager] instance.
     pub fn build_transaction_manager(
         &mut self,
