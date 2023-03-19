@@ -43,6 +43,8 @@ pub struct Config {
     pub l1_client_rpc_url: String,
     /// L2 client rpc url
     pub l2_client_rpc_url: String,
+    /// Rollup node rpc url
+    pub rollup_node_rpc_url: String,
     /// The data availability layer to use for batching transactions.
     pub data_availability_layer: u32,
     /// The network to batch transactions for.
@@ -79,6 +81,7 @@ impl Default for Config {
             ),
             l1_client_rpc_url: String::from("http://localhost:8545"),
             l2_client_rpc_url: String::from("http://localhost:8547"),
+            rollup_node_rpc_url: String::from("http://localhost:8551"),
             data_availability_layer: Chain::from_str("mainnet").unwrap().into(),
             network: Chain::from_str("optimism").unwrap().into(),
             batcher_inbox: Address::from_str(
@@ -184,6 +187,9 @@ pub struct Cli {
     /// The L2 client rpc url
     #[clap(short = 'c', long)]
     l2_client_rpc_url: Option<String>,
+    /// The rollup node rpc url
+    #[clap(short = 'r', long)]
+    rollup_node_rpc_url: Option<String>,
     /// The data availability layer to use for batching transactions.
     #[clap(short = 'd', long, default_value = "mainnet")]
     data_availability_layer: String,
@@ -201,6 +207,9 @@ impl Cli {
         // Parse optional url params
         let l1_rpc_url = self.l1_client_rpc_url.unwrap_or(extract_env!("L1_RPC_URL"));
         let l2_rpc_url = self.l2_client_rpc_url.unwrap_or(extract_env!("L2_RPC_URL"));
+        let rollup_node_rpc_url = self
+            .rollup_node_rpc_url
+            .unwrap_or(extract_env!("ROLLUP_NODE_RPC_URL"));
 
         // let config_path = home_dir().unwrap().join(".archon/archon.toml");
         Config {
@@ -214,6 +223,7 @@ impl Cli {
             batcher_address: Address::from_str(&self.batcher_address).unwrap_or_default(),
             l1_client_rpc_url: l1_rpc_url,
             l2_client_rpc_url: l2_rpc_url,
+            rollup_node_rpc_url,
             data_availability_layer: Chain::from_str(&self.data_availability_layer)
                 .unwrap()
                 .into(),

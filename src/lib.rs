@@ -19,6 +19,9 @@ pub mod client;
 /// Configuration
 pub mod config;
 
+/// State
+pub mod state;
+
 /// Common Archon Errors
 pub mod errors;
 

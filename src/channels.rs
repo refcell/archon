@@ -13,26 +13,30 @@ use std::{
         Arc,
         Mutex,
     },
+    time::Duration,
 };
 
 use bytes::Bytes;
-use ethers_core::types::{
-    Block,
-    BlockId,
-    Transaction,
-    H256,
+use ethers_core::types::BlockId;
+use ethers_providers::{
+    Http,
+    Middleware,
+    Provider,
 };
 use eyre::Result;
+use tokio::task::JoinHandle;
 
-use crate::errors::ChannelManagerError;
+use crate::{
+    errors::ChannelManagerError,
+    rollup::RollupNode,
+    state::State,
+};
 
 /// Channel Manager
 #[derive(Debug, Default)]
 pub struct ChannelManager {
-    /// List of all blocks since the last request.
-    blocks: Vec<Block<Transaction>>,
-    /// Tip is the last block hash for reorg detection.
-    tip: Option<H256>,
+    /// Internal [State] Manager
+    state: Arc<Mutex<State>>,
     /// A channel to send [Bytes] back to the [crate::client::Archon] orchestrator
     sender: Option<Sender<Pin<Box<Bytes>>>>,
     /// A channel to receive [BlockId] messages from the [crate::client::Archon] orchestrator
@@ -113,7 +117,8 @@ impl ChannelManager {
     ) -> Result<()> {
         let mut pending_txs = BTreeMap::new();
         loop {
-            // Read block id from the receiver
+            // Read block id from the receiver.
+            // This will block until a new block id is received.
             let block_id = if let Some(block_recv) = &block_recv {
                 block_recv
                     .recv()
@@ -151,14 +156,103 @@ impl ChannelManager {
         Ok(channel_manager_handle)
     }
 
+    /// Spawns a separate thread to process L2 blocks.
+    pub fn spawn_block_processor(
+        &mut self,
+        rollup_node_rpc_url: &str,
+        l2_node_rpc_url: &str,
+        interval: Duration,
+    ) -> Result<JoinHandle<Result<()>>> {
+        let rollup_node = RollupNode::new(rollup_node_rpc_url)?;
+        let l2_rpc = Provider::<Http>::try_from(l2_node_rpc_url)?;
+        let state = self.state.clone();
+
+        // Spawn the block processor in a separate thread.
+        let channel_manager_handle = tokio::spawn(async move {
+            tracing::info!(target: "archon::channels", "Spawned ChannelManager in a new thread");
+            ChannelManager::process_blocks(rollup_node, l2_rpc, interval, state).await
+        });
+        Ok(channel_manager_handle)
+    }
+
+    /// Handles the processing of L2 blocks.
+    pub async fn process_blocks(
+        rollup_node: RollupNode,
+        l2_node: Provider<Http>,
+        polling_interval: Duration,
+        state: Arc<Mutex<State>>,
+    ) -> Result<()> {
+        tracing::info!(target: "archon::channels", "Executing block processor...");
+        let mut first_iter = true;
+        let mut last_stored_block_number = 0;
+        loop {
+            // Await the poll interval at the loop start so we can ergonomically continue below.
+            if !first_iter {
+                std::thread::sleep(polling_interval);
+            }
+            first_iter = false;
+
+            // Calculate the range of L2 blocks to process
+            let (start_block, end_block) = {
+                let sync_status = match rollup_node.sync_status().await {
+                    Ok(sync_status) => sync_status,
+                    Err(err) => {
+                        tracing::error!(target: "archon::channels", "Failed to fetch rollup node sync status: {:?}", err);
+                        continue
+                    }
+                };
+                if sync_status.head_l1 == 0 {
+                    tracing::warn!(target: "archon::channels", "Rollup node is not synced yet. Waiting for rollup node to sync...");
+                    continue
+                }
+                if last_stored_block_number == 0
+                    || last_stored_block_number < sync_status.safe_l2
+                {
+                    last_stored_block_number = sync_status.safe_l2;
+                }
+                (last_stored_block_number, sync_status.unsafe_l2)
+            };
+
+            // Process the L2 blocks
+            for block_number in (start_block + 1)..=(end_block + 1) {
+                let block = match l2_node.get_block_with_txs(block_number).await {
+                    Ok(Some(block)) => block,
+                    _ => {
+                        tracing::error!(target: "archon::channels", "Failed to fetch L2 block");
+                        continue
+                    }
+                };
+                match state.lock() {
+                    Ok(mut s) => match block.number {
+                        Some(num) => {
+                            last_stored_block_number = num.as_u64();
+                            s.add_block(block);
+                        }
+                        None => {
+                            tracing::error!(target: "archon::channels", "Failed to fetch L2 block number");
+                            continue
+                        }
+                    },
+                    Err(_) => {
+                        tracing::error!(target: "archon::channels", "Failed to lock state");
+                        continue
+                    }
+                }
+                tracing::debug!(target: "archon::channels", "Processed L2 block: {:?}", last_stored_block_number);
+            }
+        }
+    }
+
     /// Clear
     ///
     /// Clears the channel manager.
     /// All of channel state is cleared.
     /// Clear is intended to be used after an L2 reorg.
     pub fn clear(&mut self) -> Result<()> {
-        self.blocks.clear();
-        self.tip = None;
+        self.state
+            .lock()
+            .map_err(|_| eyre::eyre!("Failed to lock state to clear"))?
+            .clear();
         self.clear_pending_channels()?;
         Ok(())
     }
@@ -173,18 +267,6 @@ impl ChannelManager {
     /// Constructs a [PendingChannel].
     pub fn construct_pending_channel(&self) -> Result<PendingChannel> {
         Err(ChannelManagerError::NotImplemented.into())
-    }
-
-    /// Adds an L2 block to the internal blocks queue.
-    /// It returns a [ChannelManagerError] if the block does not extend the last block loaded into the state.
-    /// If no blocks were added yet, the parent hash check is skipped.
-    pub fn push_l2_block(&mut self, block: Block<Transaction>) -> Result<()> {
-        if self.tip.is_some() && self.tip != Some(block.parent_hash) {
-            return Err(ChannelManagerError::L1Reorg.into())
-        }
-        self.tip = block.hash;
-        self.blocks.push(block);
-        Ok(())
     }
 }
 

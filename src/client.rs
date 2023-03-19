@@ -5,6 +5,7 @@ use std::{
         Receiver,
         Sender,
     },
+    time::Duration,
 };
 
 use bytes::Bytes;
@@ -49,6 +50,8 @@ pub struct Archon {
     channel_manager: Option<ChannelManager>,
     /// A join handle on the [ChannelManager]
     channel_manager_handle: Option<JoinHandle<Result<()>>>,
+    /// A join handle on the [ChannelManager] block processor
+    channel_manager_block_handle: Option<JoinHandle<Result<()>>>,
     /// The internal [ChannelManager] sender
     channel_manager_sender: Option<Sender<Pin<Box<BlockId>>>>,
     /// The inner [TransactionManager]
@@ -137,6 +140,21 @@ impl Archon {
         let mut channel_manager = channel_manager.unwrap_or_default();
         channel_manager.with_sender(cm_sender);
         channel_manager.with_receiver(cm_receiver);
+        let poll_interval = self
+            .config
+            .polling_interval
+            .unwrap_or(Duration::from_secs(5));
+        self.channel_manager_block_handle = Some(
+            channel_manager
+                .spawn_block_processor(
+                    &self.config.rollup_node_rpc_url,
+                    &self.config.l2_client_rpc_url,
+                    poll_interval,
+                )
+                .map_err(|_| {
+                    eyre::eyre!("Failed to spawn channel manager block handler")
+                })?,
+        );
         self.channel_manager_handle = Some(
             channel_manager
                 .spawn()
