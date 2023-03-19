@@ -12,13 +12,11 @@
 
 ## Quickstart
 
-First install `archup`, archon's installer:
+Archon provides an easy to use installer called `archup`.
 
-```
-curl https://raw.githubusercontent.com/refcell/arhcon/main/archup/install | bash
-```
+To install `archon`, run: `curl https://raw.githubusercontent.com/refcell/arhcon/main/archup/install | bash`.
 
-To install archon, run `archup`.
+Additionally, you can run archon for [ethereum-optimism](https://github.com/ethereum-optimism) using the provided scripts in the `scripts` directory.
 
 ## Architecture
 
@@ -233,6 +231,10 @@ Both the `OP_BATCHER_CHANNEL_TIMEOUT` and `OP_BATCHER_SEQUENCER_BATCH_INBOX_ADDR
 
 The `OP_BATCHER_SEQUENCER_GENESIS_HASH` is deprecated. And the `OP_BATCHER_MIN_L1_TX_SIZE_BYTES` is now calculated differently as described in [Gas Effeciency](#-Gas-Efficiency) section above.
 
+## Why "Archon"?
+
+The term "archon" means "ruler" in Greek. In ancient Athens, an "Archon" refers to each of the nine chief [magistrates](https://en.wikipedia.org/wiki/Magistrate), civilians who were elected to administer the law. Like the magistrates, Archon reigns judicial and executive power. Responsible for the state of the "rollup", Archon batches and submits chain data to a data availability layer.
+
 ## FAQ
 
 > Why doesn't the op-batcher currently send multiple frames per transaction?
@@ -247,10 +249,6 @@ We could even let a channel span multiple full transactions, to achieve an even 
 >
 > - If there's a small leftover frame, we can actually start a new channel and construct a transaction with both the leftover frame and the next channels first frame. This is a _greedy_ approach at filling up transactions in order to amortize the fixed gas costs of L1 transactions.
 > - If we build multiple channels in parallel, we can submit multiple frames in a single transaction.
-
-## Why "Archon"?
-
-The term "archon" means "ruler" in Greek. In ancient Athens, an "Archon" refers to each of the nine chief [magistrates](https://en.wikipedia.org/wiki/Magistrate), civilians who were elected to administer the law. Like the magistrates, Archon reigns judicial and executive power. Responsible for the state of the "rollup", Archon batches and submits chain data to a data availability layer.
 
 ## Contributing
 
