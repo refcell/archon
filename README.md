@@ -24,9 +24,6 @@ The `Archon` struct first _builds_ "stages" and then executes them as asynchrono
 
 The primary entrypoint for `archon` is [./src/client/rs](./src/client.rs) which is the `Archon` struct. `Archon` exposes methods for building batcher stages. These stages are intended to be constructed and executed in the following order:
 
-
-// TODO: Document further as part of a github issue.
-
 ## Configuration
 
 The `archon` cli maintains a verbose menu for running a batching service. To see a list of all available commands, run `archon --help`. This will print output similar to the following:

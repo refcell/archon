@@ -20,22 +20,22 @@ use serde::{
 #[derive(Debug, Clone, Default)]
 pub struct RollupNode {
     /// The rollup node's URL.
-    pub l2_client: Option<Provider<Http>>,
+    pub client: Option<Provider<Http>>,
 }
 
 impl RollupNode {
     /// Creates a new rollup node.
     pub fn new(l2_url: &str) -> Result<Self> {
-        let l2_client = Provider::<Http>::try_from(l2_url)?;
+        let client = Provider::<Http>::try_from(l2_url)?;
         Ok(Self {
-            l2_client: Some(l2_client),
+            client: Some(client),
         })
     }
 
     /// Fetches the output of the rollup node as a [`OutputResponse`].
     pub async fn output_at_block(&self, block_num: u64) -> Result<OutputResponse> {
         let output = self
-            .l2_client
+            .client
             .as_ref()
             .unwrap()
             .request("optimism_outputAtBlock", vec![block_num])
@@ -50,7 +50,7 @@ impl RollupNode {
     pub async fn sync_status(&self) -> Result<SyncStatus> {
         let empty_params: Vec<String> = Vec::new();
         let sync_status = self
-            .l2_client
+            .client
             .as_ref()
             .unwrap()
             .request("optimism_syncStatus", empty_params)
@@ -62,7 +62,7 @@ impl RollupNode {
     pub async fn rollup_config(&self) -> Result<serde_json::Value> {
         let empty_params: Vec<String> = Vec::new();
         let config = self
-            .l2_client
+            .client
             .as_ref()
             .unwrap()
             .request("optimism_rollupConfig", empty_params)
@@ -74,7 +74,7 @@ impl RollupNode {
     pub async fn version(&self) -> Result<String> {
         let empty_params: Vec<String> = Vec::new();
         let version = self
-            .l2_client
+            .client
             .as_ref()
             .unwrap()
             .request("optimism_version", empty_params)
