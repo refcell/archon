@@ -40,6 +40,9 @@ pub mod metrics;
 /// Common internal macros
 pub(crate) mod macros;
 
+/// Pipeline Builder
+pub mod pipeline;
+
 /// Re-export Archon Types
 pub mod prelude {
     pub use crate::{
