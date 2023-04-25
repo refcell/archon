@@ -93,9 +93,27 @@ impl Archon {
         self
     }
 
+    /// Sets the [TransactionManager] instance on the [Archon] client
+    pub fn with_transaction_manager(&mut self, manager: TransactionManager) -> &mut Self {
+        self.tx_manager = Some(manager);
+        self
+    }
+
     /// Sets a [Metrics] server on the [Archon] client
     pub fn with_metrics(&mut self, metrics: Metrics) -> &mut Self {
         self.metrics = Some(metrics);
+        self
+    }
+
+    pub fn config(&self) -> &Config {
+        &self.config
+    }
+
+    pub fn with_tx_manager_sender(
+        &mut self,
+        sender: Sender<Pin<Box<Bytes>>>,
+    ) -> &mut Self {
+        self.tx_manager_sender = Some(sender);
         self
     }
 
