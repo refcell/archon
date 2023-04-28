@@ -21,6 +21,7 @@ use crate::{
     config::Config,
     driver::Driver,
     metrics::Metrics,
+    pipeline_builder::PipelineBuilder,
     transactions::TransactionManager,
 };
 
@@ -96,6 +97,20 @@ impl Archon {
     /// Sets a [Metrics] server on the [Archon] client
     pub fn with_metrics(&mut self, metrics: Metrics) -> &mut Self {
         self.metrics = Some(metrics);
+        self
+    }
+
+    /// Returns a reference to [Config]
+    pub fn config(&self) -> &Config {
+        &self.config
+    }
+
+    /// Sets the internal [TransactionManager] sender
+    pub fn with_tx_manager_sender(
+        &mut self,
+        sender: Sender<Pin<Box<Bytes>>>,
+    ) -> &mut Self {
+        self.tx_manager_sender = Some(sender);
         self
     }
 
@@ -271,9 +286,15 @@ impl Archon {
         self.metrics = Some(Metrics::new());
 
         tracing::info!(target: "archon", "Building batch submission pipeline");
-        let block_recv = self.build_driver()?;
-        let (_, bytes_recv) = self.build_channel_manager(Some(block_recv))?;
-        let (_, receipt_recv) = self.build_transaction_manager(Some(bytes_recv))?;
+        // let block_recv = self.build_driver()?;
+        // let (_, bytes_recv) = self.build_channel_manager(Some(block_recv))?;
+        // let (_, receipt_recv) = self.build_transaction_manager(Some(bytes_recv))?;
+
+        let receipt_recv = PipelineBuilder::<()>::new(self)
+            .channel(Driver::default())
+            .channel(ChannelManager::default())
+            .channel(TransactionManager::default())
+            .build();
 
         tracing::info!(target: "archon", "Spawning batch submission pipeline");
         self.spawn_driver()?;

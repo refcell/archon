@@ -1,13 +1,4 @@
-use std::{
-    pin::Pin,
-    sync::{
-        mpsc::Sender,
-        Arc,
-        Mutex,
-    },
-    time::Duration,
-};
-
+use crate::client::Archon;
 use ethers_core::types::{
     BlockId,
     BlockNumber,
@@ -18,6 +9,21 @@ use ethers_providers::{
     Provider,
 };
 use eyre::Result;
+use std::{
+    pin::Pin,
+    sync::{
+        mpsc::{
+            channel,
+            Receiver,
+            Sender,
+        },
+        Arc,
+        Mutex,
+    },
+    time::Duration,
+};
+
+use crate::pipeline_builder::Stage;
 
 /// Driver handles the driving of the batch submission pipeline.
 #[derive(Debug, Default, Clone)]
@@ -122,5 +128,25 @@ impl Driver {
                 tracing::warn!(target: "archon::driver", "failed to send block id {:?} to spawner: {}", block_id, e);
             }
         }
+    }
+}
+
+impl Stage for Driver {
+    type Input = ();
+    type Output = BlockId;
+
+    /// Builds a new [Driver] instance.
+    fn build(
+        &mut self,
+        pipeline: &mut Archon,
+        _receiver: Option<Receiver<Pin<Box<Self::Input>>>>,
+    ) -> Result<Receiver<Pin<Box<BlockId>>>> {
+        let (sender, receiver) = channel::<Pin<Box<Self::Output>>>();
+        let l1_client = pipeline.config().get_l1_client().unwrap();
+        let poll_interval = pipeline.config().polling_interval;
+        let mut driver = Driver::new(l1_client, poll_interval, None);
+        driver.with_channel(sender);
+        pipeline.with_driver(driver);
+        Ok(receiver)
     }
 }
