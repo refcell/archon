@@ -29,7 +29,7 @@ use tokio::task::JoinHandle;
 
 use crate::{
     errors::ChannelManagerError,
-    pipeline::Stage,
+    pipeline_builder::Stage,
     rollup::RollupNode,
     state::State,
 };
@@ -279,14 +279,14 @@ impl Stage for ChannelManager {
     fn build(
         &mut self,
         _pipeline: &mut Archon,
-        receiver: Option<Receiver<Pin<Box<Self::Input>>>>,
-    ) -> Result<Option<Receiver<Pin<Box<Self::Output>>>>> {
+        receiver: Option<Receiver<Pin<Box<BlockId>>>>,
+    ) -> Result<Receiver<Pin<Box<Bytes>>>> {
         let (cm_sender, archon_receiver) = channel::<Pin<Box<Bytes>>>();
         let (_archon_sender, cm_receiver) = channel::<Pin<Box<BlockId>>>();
         self.with_sender(cm_sender);
         self.with_receiver(cm_receiver);
         self.receive_blocks(receiver);
-        Ok(Some(archon_receiver))
+        Ok(archon_receiver)
     }
 }
 

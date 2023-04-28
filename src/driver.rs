@@ -23,10 +23,7 @@ use std::{
     time::Duration,
 };
 
-use crate::{
-    config::Config,
-    pipeline::Stage,
-};
+use crate::pipeline_builder::Stage;
 
 /// Driver handles the driving of the batch submission pipeline.
 #[derive(Debug, Default, Clone)]
@@ -135,20 +132,21 @@ impl Driver {
 }
 
 impl Stage for Driver {
-    type Input = u32;
+    type Input = ();
     type Output = BlockId;
 
+    /// Builds a new [Driver] instance.
     fn build(
         &mut self,
         pipeline: &mut Archon,
         _receiver: Option<Receiver<Pin<Box<Self::Input>>>>,
-    ) -> Result<Option<Receiver<Pin<Box<Self::Output>>>>> {
-        let (sender, receiver) = channel::<Pin<Box<BlockId>>>();
-        let l1_client = pipeline.config().get_l1_client()?;
+    ) -> Result<Receiver<Pin<Box<BlockId>>>> {
+        let (sender, receiver) = channel::<Pin<Box<Self::Output>>>();
+        let l1_client = pipeline.config().get_l1_client().unwrap();
         let poll_interval = pipeline.config().polling_interval;
         let mut driver = Driver::new(l1_client, poll_interval, None);
         driver.with_channel(sender);
         pipeline.with_driver(driver);
-        Ok(Some(receiver))
+        Ok(receiver)
     }
 }

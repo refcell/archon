@@ -1,11 +1,10 @@
 use crate::{
     client::Archon,
-    pipeline::Stage,
+    pipeline_builder::Stage,
 };
 use bytes::Bytes;
 use ethers_core::types::{
     Address,
-    BlockId,
     TransactionReceipt,
     TransactionRequest,
 };
@@ -285,15 +284,14 @@ impl TransactionManager {
 impl Stage for TransactionManager {
     type Input = Bytes;
     type Output = TransactionReceipt;
-
     fn build(
         &mut self,
         pipeline: &mut Archon,
-        receiver: Option<Receiver<Pin<Box<Self::Input>>>>,
-    ) -> Result<Option<Receiver<Pin<Box<Self::Output>>>>> {
+        receiver: Option<Receiver<Pin<Box<Bytes>>>>,
+    ) -> Result<Receiver<Pin<Box<TransactionReceipt>>>> {
         let (archon_sender, tx_mgr_receiver) = channel::<Pin<Box<Bytes>>>();
         let (tx_mgr_sender, archon_receiver) = channel::<Pin<Box<TransactionReceipt>>>();
-        pipeline.with_tx_manager_sender = Some(archon_sender.clone());
+        pipeline.with_tx_manager_sender(archon_sender.clone());
         // self.tx_manager_receiver = Some(archon_receiver.clone());
         // let transaction_manager = pipeline.tx_manager.take();
         let mut transaction_manager = TransactionManager::new(
@@ -306,6 +304,7 @@ impl Stage for TransactionManager {
         transaction_manager.with_sender(tx_mgr_sender);
         transaction_manager.with_receiver(tx_mgr_receiver);
         transaction_manager.receive_bytes(receiver);
-        Ok(Some(archon_receiver))
+
+        Ok(archon_receiver)
     }
 }

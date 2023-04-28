@@ -41,7 +41,7 @@ pub mod metrics;
 pub(crate) mod macros;
 
 /// Pipeline Builder
-pub mod pipeline;
+pub mod pipeline_builder;
 
 /// Re-export Archon Types
 pub mod prelude {
