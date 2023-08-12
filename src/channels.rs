@@ -1,3 +1,12 @@
+use crate::client::Archon;
+use bytes::Bytes;
+use ethers_core::types::BlockId;
+use ethers_providers::{
+    Http,
+    Middleware,
+    Provider,
+};
+use eyre::Result;
 use std::{
     collections::BTreeMap,
     fmt::{
@@ -7,6 +16,7 @@ use std::{
     pin::Pin,
     sync::{
         mpsc::{
+            channel,
             Receiver,
             Sender,
         },
@@ -15,19 +25,11 @@ use std::{
     },
     time::Duration,
 };
-
-use bytes::Bytes;
-use ethers_core::types::BlockId;
-use ethers_providers::{
-    Http,
-    Middleware,
-    Provider,
-};
-use eyre::Result;
 use tokio::task::JoinHandle;
 
 use crate::{
     errors::ChannelManagerError,
+    pipeline_builder::Stage,
     rollup::RollupNode,
     state::State,
 };
@@ -267,6 +269,24 @@ impl ChannelManager {
     /// Constructs a [PendingChannel].
     pub fn construct_pending_channel(&self) -> Result<PendingChannel> {
         Err(ChannelManagerError::NotImplemented.into())
+    }
+}
+
+impl Stage for ChannelManager {
+    type Input = BlockId;
+    type Output = Bytes;
+
+    fn build(
+        &mut self,
+        _pipeline: &mut Archon,
+        receiver: Option<Receiver<Pin<Box<BlockId>>>>,
+    ) -> Result<Receiver<Pin<Box<Bytes>>>> {
+        let (cm_sender, archon_receiver) = channel::<Pin<Box<Bytes>>>();
+        let (_archon_sender, cm_receiver) = channel::<Pin<Box<BlockId>>>();
+        self.with_sender(cm_sender);
+        self.with_receiver(cm_receiver);
+        self.receive_blocks(receiver);
+        Ok(archon_receiver)
     }
 }
 

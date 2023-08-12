@@ -1,3 +1,7 @@
+use crate::{
+    client::Archon,
+    pipeline_builder::Stage,
+};
 use bytes::Bytes;
 use ethers_core::types::{
     Address,
@@ -17,6 +21,7 @@ use std::{
     convert::TryFrom,
     pin::Pin,
     sync::mpsc::{
+        channel,
         Receiver,
         Sender,
     },
@@ -273,5 +278,33 @@ impl TransactionManager {
             .nonce(nonce);
 
         Ok(tx)
+    }
+}
+
+impl Stage for TransactionManager {
+    type Input = Bytes;
+    type Output = TransactionReceipt;
+    fn build(
+        &mut self,
+        pipeline: &mut Archon,
+        receiver: Option<Receiver<Pin<Box<Bytes>>>>,
+    ) -> Result<Receiver<Pin<Box<TransactionReceipt>>>> {
+        let (archon_sender, tx_mgr_receiver) = channel::<Pin<Box<Bytes>>>();
+        let (tx_mgr_sender, archon_receiver) = channel::<Pin<Box<TransactionReceipt>>>();
+        pipeline.with_tx_manager_sender(archon_sender.clone());
+        // self.tx_manager_receiver = Some(archon_receiver.clone());
+        // let transaction_manager = pipeline.tx_manager.take();
+        let mut transaction_manager = TransactionManager::new(
+            Some(pipeline.config().network.into()),
+            Some(pipeline.config().batcher_inbox),
+            Some(pipeline.config().proposer_address),
+            Some(pipeline.config().batcher_private_key.clone()),
+            pipeline.config().get_l1_client()?,
+        );
+        transaction_manager.with_sender(tx_mgr_sender);
+        transaction_manager.with_receiver(tx_mgr_receiver);
+        transaction_manager.receive_bytes(receiver);
+
+        Ok(archon_receiver)
     }
 }
